@@ -34,6 +34,13 @@ def main(argv=None):
     sub.add_parser("morning", help="digest of what ran last night")
     sub.add_parser("backlog", help="show the overnight task backlog")
 
+    p_ask = sub.add_parser("ask", help="ask the NightClaw agent a question (one-shot)")
+    p_ask.add_argument("question", nargs="+", help="your question, plain English")
+    p_ask.add_argument("--model", default=None, help="model override for the agent")
+
+    p_chat = sub.add_parser("chat", help="talk to the NightClaw agent interactively")
+    p_chat.add_argument("--model", default=None, help="model override for the agent")
+
     # AXI principle: no arguments shows live data, not help text.
     if not argv:
         argv = ["report"]
@@ -66,6 +73,14 @@ def main(argv=None):
         night._ensure_config()
         print(night.BACKLOG.read_text())
         return 0
+
+    if args.cmd == "ask":
+        from . import agent
+        return agent.ask(" ".join(args.question), model=args.model)
+
+    if args.cmd == "chat":
+        from . import agent
+        return agent.chat(model=args.model)
 
     report = core.assemble(days=args.days)
     if report is None:

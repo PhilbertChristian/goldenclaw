@@ -104,6 +104,23 @@ nightclaw json                # machine-readable — pipe it to your agent
 nightclaw doctor              # verify NightClaw can find your usage data
 ```
 
+### Just talk to it
+
+In the NanoClaw spirit — no monitoring dashboard, ask the agent — NightClaw
+ships a conversation layer over the data:
+
+```bash
+nightclaw ask "how's my utilization this month?"
+nightclaw chat        # full interactive session
+```
+
+`ask` launches a headless Claude Code session that is pre-approved to run
+**only** `nightclaw` commands — it answers from real sensor runs and can't
+touch anything else without asking. `chat` is a full interactive session
+where normal permission prompts apply, so you can also manage your backlog
+conversationally ("queue up test-writing for the api repo tonight").
+Requires the `claude` CLI.
+
 ### The night shift
 
 ```bash

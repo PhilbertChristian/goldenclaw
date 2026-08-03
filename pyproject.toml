@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nightclaw"
-version = "0.2.0"
+version = "0.3.0"
 description = "Stop paying for tokens you never use — measure and maximize your AI subscription token utilization."
 readme = "README.md"
 license = "MIT"

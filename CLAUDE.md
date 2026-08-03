@@ -18,6 +18,10 @@ is the intended customization model — this file orients you.
   `doctor`, `goodnight`, `morning`, `backlog`.
 - `nightclaw/night.py` — the night shift: backlog parsing, repo allowlist,
   budget-capped headless `claude -p` runs, per-night JSONL journal.
+- `nightclaw/agent.py` — the conversation layer: `ask` (headless, allowed
+  tools locked to `Bash(nightclaw:*)`) and `chat` (interactive) over the
+  Claude Code CLI. The agent must never invent numbers — the system prompt
+  enforces run-the-sensor-first; keep it that way.
 
 ## Invariants — do not break these
 

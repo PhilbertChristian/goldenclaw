@@ -45,6 +45,7 @@ DEFAULT_CONFIG = {
     "repos": {},
     "night_budget_tokens": 30_000_000,
     "task_timeout_minutes": 45,
+    "weekly_reserve_pct": 15,
     "permission_mode": None,
     "model": None,
     "extra_args": [],
@@ -180,6 +181,17 @@ def run_night(cfg, budget_override=None, dry_run=False, assume_yes=False, out=pr
         out("  ! skipping: {}".format(p))
     if not runnable:
         out("  Nothing runnable. Add your repos to {} first.".format(NIGHT_CONFIG))
+        return 1
+
+    from . import quota
+    guard_ok, guard_msg = quota.night_budget_guard(
+        float(cfg.get("weekly_reserve_pct", 15)))
+    out("")
+    out("  Quota check: {}".format(guard_msg))
+    if not guard_ok:
+        out("  ⛔ Not enough weekly quota left to run the night safely.")
+        out("     Your morning session needs a full tank. Lower "
+            "weekly_reserve_pct in night.json to override.")
         return 1
 
     budget = int(budget_override or cfg["night_budget_tokens"])

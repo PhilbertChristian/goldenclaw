@@ -87,3 +87,46 @@ Anything published from NightClaw output follows three rules:
    the receipt).
 2. The methodology (this document) is linked next to the claim.
 3. Estimates are biased against the claim, never toward it.
+
+---
+
+## Calibrated quota (v0.4)
+
+The utilization proxy above answers *"how much of a theoretical throughput
+ceiling did I use?"* — which is not the question anyone actually has. The
+question is **"how much is left this week?"**, and local logs alone cannot
+answer it: they record consumption, not entitlement.
+
+Calibration joins the two sources without credentials or scraping:
+
+1. You read the provider's usage panel once and enter what it says:
+   `nightclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"`.
+2. NightClaw independently measures your consumption over that same weekly
+   window from local logs, in cost-weighted units.
+3. It back-solves capacity: `cap = measured_consumption / (percent_used/100)`.
+4. From then on, remaining quota, burn rate, runway, and projected
+   exhaustion are computed continuously and offline.
+
+### Why cost-weighted units, not raw tokens
+
+Raw totals are dominated by cache reads (in one real week: 199M of 210M
+tokens), which bill at ~0.1× the input rate. A cap expressed in raw tokens
+would swing by an order of magnitude with your cache-hit ratio alone.
+Cost-weighted units (USD-equivalent at API rates, cache write 1.25×, cache
+read 0.1×) track far more closely to whatever the provider meters.
+
+The unit choice is also self-correcting by construction: the cap is
+back-solved in the *same* unit the consumption is measured in, so the ratio
+holds regardless of whether the provider's internal accounting matches ours
+exactly — as long as your workload mix is roughly stable between
+calibrations. When it isn't, the panel and NightClaw will disagree, and
+re-calibrating fixes it in one command.
+
+### Known limits
+
+- Accuracy depends on the panel reading being current. Take it and run
+  `calibrate` in the same minute.
+- Multi-machine usage splits the logs; NightClaw only sees the machine it
+  runs on, so it will under-measure consumption and over-estimate the cap.
+- A calibration older than its weekly window is flagged stale rather than
+  silently trusted.

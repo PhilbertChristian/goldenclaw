@@ -104,6 +104,41 @@ nightclaw json                # machine-readable — pipe it to your agent
 nightclaw doctor              # verify NightClaw can find your usage data
 ```
 
+### How much is left? (live quota)
+
+Your logs know what you **consumed**. Only the provider knows your
+**entitlement** — and its usage panel forgets everything past a week. Join
+them once:
+
+```bash
+nightclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"
+nightclaw quota
+```
+
+```
+  Session (5h)  resets in 3h  ·  26.1M tokens this window
+
+  Weekly · all models ▐█████████████░░░░░░░░░░░░░▌  51% left
+    ~$48 of ~$98 used · burn $0.4/h · runway 5d 2h
+  Weekly · Fable      ▐████░░░░░░░░░░░░░░░░░░░░░░▌  15% left
+    ~$42 of ~$50 used · burn $0.4/h · runway 21h
+    ⚠ at this burn rate you run out before the reset
+```
+
+You read your panel's percentages once; NightClaw back-solves your capacity
+from consumption it measured independently over the same window, then tracks
+what's left **offline, forever** — no credentials, no API tokens, no
+scraping. Re-run `calibrate` weekly (or whenever the panel and NightClaw
+disagree) — it's self-correcting.
+
+Consumption is measured in **cost-weighted units**, not raw tokens: cache
+reads bill at ~0.1× input, so a raw-token count swings wildly with your
+cache-hit ratio. Full reasoning in [docs/methodology.md](docs/methodology.md).
+
+Once calibrated, the night shift protects you automatically — `goodnight`
+refuses to run if it would eat into your morning reserve
+(`weekly_reserve_pct`, default 15%).
+
 ### Just talk to it
 
 In the NanoClaw spirit — no monitoring dashboard, ask the agent — NightClaw
@@ -185,7 +220,7 @@ schedule → policy-governed execution → morning report.**
       opt-in-only permission model (v0.2)
 - [x] **Morning digest** — `morning`: what ran, what it cost, how it exited (v0.2)
 - [ ] **Full tank at 9am** — reserve forecasted morning headroom, spend the rest
-- [ ] **Multi-provider ledger** — quota-axi integration; drain expiring quota first
+- [ ] **Multi-provider ledger** (next) — quota-axi integration; drain expiring quota first
 - [ ] **Eval-informed picker** — route tasks to the model that measurably does
       them best per token
 

@@ -14,6 +14,7 @@ CYAN = "\033[36m"
 YELLOW = "\033[33m"
 GREEN = "\033[32m"
 MAGENTA = "\033[35m"
+RED = "\033[31m"
 
 SHADES = " ░▒▓█"
 
@@ -169,5 +170,70 @@ def render_morning(journal_path, entries, report=None):
                          report["overnight"]["night_token_share_pct"]), DIM))
         lines.append("")
     lines.append(c("  Full detail: {}".format(journal_path), DIM))
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _clock(hours):
+    if hours is None:
+        return "—"
+    if hours < 1:
+        return "{:.0f}m".format(hours * 60)
+    if hours < 48:
+        return "{:.0f}h".format(hours)
+    return "{:.0f}d {:.0f}h".format(hours // 24, hours % 24)
+
+
+def render_quota(s):
+    lines = ["", c("  🌙 NightClaw", BOLD, MAGENTA) + c("  — live quota", DIM), ""]
+
+    sess = s.get("session")
+    if sess and sess.get("active"):
+        lines.append("  " + c("Session (5h)", BOLD)
+                     + "  resets in {}".format(_clock(sess["minutes_left"] / 60))
+                     + c("  ·  {} tokens this window".format(fmt(sess["used_tokens"])), DIM))
+        lines.append("")
+
+    if not s.get("calibrated"):
+        lines.append(c("  Remaining quota is not calibrated yet.", YELLOW))
+        lines.append("")
+        lines.append("  Your logs know what you " + c("consumed", BOLD)
+                     + "; only the provider knows your " + c("entitlement", BOLD) + ".")
+        lines.append("  Teach NightClaw yours once — open Claude's usage panel and run:")
+        lines.append("")
+        lines.append(c("    nightclaw calibrate --weekly 49 --fable 85 --resets \"Wed 3:00 PM\"", CYAN))
+        lines.append("")
+        lines.append(c("  From then on NightClaw tracks what's left, offline, with no credentials.", DIM))
+        lines.append("")
+        return "\n".join(lines)
+
+    if s.get("stale"):
+        lines.append(c("  ⚠ calibration is {} week(s) old — percentages drift; re-run "
+                       "`nightclaw calibrate`".format(s["weeks_since_calibration"]), YELLOW))
+        lines.append("")
+
+    for pool in s["pools"].values():
+        left = pool["percent_left"] / 100
+        color = GREEN if left > .5 else (YELLOW if left > .15 else RED)
+        lines.append("  " + c("{:<20}".format(pool["label"]), BOLD) + c(bar(left), color)
+                     + "  " + c("{:.0f}% left".format(pool["percent_left"]), BOLD, color))
+        detail = "    ~${:.0f} of ~${:.0f} used · burn ${:.1f}/h · runway {}".format(
+            pool["used_units"], pool["cap_units"], pool["burn_units_per_hour"],
+            _clock(pool["runway_hours"]))
+        lines.append(c(detail, DIM))
+        if pool["exhausts_before_reset"]:
+            lines.append(c("    ⚠ at this burn rate you run out before the reset", YELLOW))
+    lines.append("")
+
+    resets = s.get("resets_at_human") or s["resets_at"][:16].replace("T", " ")
+    lines.append("  Weekly reset  " + c(resets, BOLD)
+                 + c("  ·  in {}".format(_clock(s["hours_until_reset"])), DIM))
+    lines.append("")
+    lines.append(c("  Units are cost-weighted (USD-equivalent at API rates), not raw", DIM))
+    lines.append(c("  tokens — cache reads bill at ~0.1x and would distort a raw count.", DIM))
+    lines.append("")
+    lines.append(c("  Next steps", BOLD))
+    lines.append(c("    nightclaw calibrate ...   re-sync with the panel (do this weekly)", DIM))
+    lines.append(c("    claw how much is left     ask in plain English", DIM))
     lines.append("")
     return "\n".join(lines)

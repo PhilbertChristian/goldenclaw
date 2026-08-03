@@ -25,6 +25,22 @@ def main(argv=None):
 
     sub.add_parser("doctor", help="verify NightClaw can find your usage data")
 
+    p_quota = sub.add_parser("quota", help="live quota: how much is left, when it resets")
+    p_quota.add_argument("--json", action="store_true", dest="as_json",
+                         help="machine-readable")
+
+    p_cal = sub.add_parser(
+        "calibrate",
+        help="teach NightClaw your entitlement from the provider's usage panel")
+    p_cal.add_argument("--weekly", type=float, default=None,
+                       help="percent used, all-models weekly pool (e.g. 49)")
+    p_cal.add_argument("--fable", type=float, default=None,
+                       help="percent used, Fable weekly pool")
+    p_cal.add_argument("--opus", type=float, default=None,
+                       help="percent used, Opus weekly pool")
+    p_cal.add_argument("--resets", default=None,
+                       help='weekly reset as shown in the panel, e.g. "Wed 3:00 PM"')
+
     p_night = sub.add_parser("goodnight", help="run your backlog overnight, inside guardrails")
     p_night.add_argument("--dry-run", action="store_true", help="show the plan without running")
     p_night.add_argument("--budget", type=int, default=None, help="override night token budget")
@@ -50,6 +66,40 @@ def main(argv=None):
         d = core.doctor()
         print(render.render_doctor(d))
         return 0 if d["ok"] else 1
+
+    if args.cmd == "quota":
+        from . import quota
+        s = quota.state()
+        print(json.dumps(s, indent=2) if args.as_json else render.render_quota(s))
+        return 0
+
+    if args.cmd == "calibrate":
+        from . import quota
+        pools = {k: v for k, v in (("weekly", args.weekly), ("fable", args.fable),
+                                   ("opus", args.opus)) if v is not None}
+        if not pools or not args.resets:
+            print(
+                "Open Claude Code's usage panel (/usage), then pass what it shows:\n"
+                '  nightclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"\n'
+                "\nAt least one pool percentage and --resets are required.",
+                file=sys.stderr)
+            return 1
+        try:
+            data = quota.save_reading(pools, args.resets)
+        except ValueError as e:
+            print("Calibration failed: {}".format(e), file=sys.stderr)
+            return 1
+        print("\n  ✓ Calibrated against your panel reading.\n")
+        for name, entry in data["pools"].items():
+            if entry["cap_units"]:
+                print("    {:<8} {:.0f}% used  →  weekly capacity ≈ ${:.0f} of "
+                      "API-rate value".format(name, entry["percent_used"],
+                                              entry["cap_units"]))
+            else:
+                print("    {:<8} no measured usage in this window — cannot "
+                      "back-solve a cap yet".format(name))
+        print("\n  Run `nightclaw quota` to see what's left.\n")
+        return 0
 
     if args.cmd == "goodnight":
         from . import night

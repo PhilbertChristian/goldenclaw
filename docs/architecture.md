@@ -1,4 +1,8 @@
-# NightClaw — Design
+# NightClaw — Architecture & Design
+
+> Phase 1 (the sensor) is built — see the repo root. This document is the
+> design for the full closed loop. Metric definitions live in
+> [methodology.md](methodology.md).
 
 ## Thesis
 

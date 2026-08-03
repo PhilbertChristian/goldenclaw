@@ -104,6 +104,29 @@ nightclaw json                # machine-readable — pipe it to your agent
 nightclaw doctor              # verify NightClaw can find your usage data
 ```
 
+### The night shift
+
+```bash
+nightclaw backlog                 # your overnight task list (~/.config/nightclaw/backlog.md)
+nightclaw goodnight --dry-run     # validate the plan: repos, budget, timeouts
+nightclaw goodnight               # run it — confirmation required
+nightclaw morning                 # digest: what ran, what it cost, how it exited
+```
+
+Tasks are one line each — `- [ ] repo: task description` — and only repos you
+name in `~/.config/nightclaw/night.json`'s allowlist can be touched. The
+night stops when the token budget is spent; every run is journaled.
+
+**The safety model is opt-in by design.** There is *no default* permission
+mode: before anything runs unattended you must explicitly write one into
+`night.json` — `"default"` (only pre-approved tools), `"plan"` (read-only),
+or `"acceptEdits"` (agents may edit allowlisted repos without per-action
+approval — understand what that means before choosing it).
+`"bypassPermissions"` is refused and always will be. Launching additionally
+requires typed confirmation of the plan (or `--yes` after a `--dry-run`
+review). On macOS, tasks run under `caffeinate` so sleep doesn't kill the
+night.
+
 Feed it to an agent:
 
 ```bash
@@ -140,9 +163,10 @@ Measurement is phase 1. The goal is the closed loop: **telemetry → forecast �
 schedule → policy-governed execution → morning report.**
 
 - [x] **Sensor** — baseline utilization, coverage, heatmap, dollar value
-- [ ] **Night shift** — a "goodnight" trigger (via [NanoClaw](https://github.com/qwibitai/nanoclaw))
-      that runs your task backlog overnight with guardrails and budget caps
-- [ ] **Morning digest** — what ran, what it cost, quota state, PRs to review
+- [x] **Night shift** — `goodnight` runs your backlog overnight: repo
+      allowlist, hard token budget, per-task timeouts, journaled, and an
+      opt-in-only permission model (v0.2)
+- [x] **Morning digest** — `morning`: what ran, what it cost, how it exited (v0.2)
 - [ ] **Full tank at 9am** — reserve forecasted morning headroom, spend the rest
 - [ ] **Multi-provider ledger** — quota-axi integration; drain expiring quota first
 - [ ] **Eval-informed picker** — route tasks to the model that measurably does

@@ -15,7 +15,9 @@ is the intended customization model — this file orients you.
 - `nightclaw/render.py` — ANSI presentation only, no logic. Respects
   `NO_COLOR` and non-TTY. Bare `nightclaw` must show live data, never help.
 - `nightclaw/cli.py` — argparse; subcommands `report` (default), `json`,
-  `doctor`.
+  `doctor`, `goodnight`, `morning`, `backlog`.
+- `nightclaw/night.py` — the night shift: backlog parsing, repo allowlist,
+  budget-capped headless `claude -p` runs, per-night JSONL journal.
 
 ## Invariants — do not break these
 
@@ -29,6 +31,10 @@ is the intended customization model — this file orients you.
    `docs/methodology.md` in the same change.
 5. `nightclaw json` output is a stable-ish interface (agents consume it) —
    add keys freely, rename/remove reluctantly.
+6. **The night runner's permission model is opt-in only.** Never give
+   `permission_mode` a default, never accept `bypassPermissions`, never
+   remove the launch confirmation. Unattended editing must always be an
+   explicit, written choice by the user.
 
 ## Adding a provider adapter (the most-wanted contribution)
 

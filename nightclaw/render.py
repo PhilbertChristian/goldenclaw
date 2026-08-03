@@ -137,3 +137,37 @@ def render_doctor(d):
     lines.append("  " + (c(verdict, BOLD, GREEN) if d["ok"] else c(verdict, BOLD, YELLOW)))
     lines.append("")
     return "\n".join(lines)
+
+
+def render_morning(journal_path, entries, report=None):
+    lines = ["", c("  🌅 NightClaw morning report", BOLD, YELLOW)
+             + c("  — " + journal_path.stem, DIM), ""]
+    tasks = [e for e in entries if e.get("type") == "task"]
+    stopped = any(e.get("type") == "budget_stop" for e in entries)
+    if not tasks:
+        lines.append(c("  No tasks ran last night.", DIM))
+        lines.append("")
+        return "\n".join(lines)
+
+    ok = sum(1 for t in tasks if t.get("ok"))
+    total_tokens = sum(int(t.get("tokens") or 0) for t in tasks)
+    lines.append("  Tasks  {} run · {} ✓ · {} ✗{}".format(
+        len(tasks), ok, len(tasks) - ok,
+        "  (stopped at budget)" if stopped else ""))
+    lines.append("  Tokens {} spent overnight".format(fmt(total_tokens)))
+    lines.append("")
+    for t in tasks:
+        mark = c("✓", GREEN) if t.get("ok") else c("✗", YELLOW)
+        lines.append("  {} [{}] {}".format(mark, t.get("repo"), (t.get("prompt") or "")[:70]))
+        lines.append(c("      {} tokens · exit {}".format(
+            fmt(int(t.get("tokens") or 0)), t.get("exit_code")), DIM))
+    lines.append("")
+    if report:
+        lines.append("  Utilization (7d)  "
+                     + c("{:.1f}%".format(report["utilization_proxy_pct"]), BOLD, YELLOW)
+                     + c("  ·  overnight share {:.1f}%".format(
+                         report["overnight"]["night_token_share_pct"]), DIM))
+        lines.append("")
+    lines.append(c("  Full detail: {}".format(journal_path), DIM))
+    lines.append("")
+    return "\n".join(lines)

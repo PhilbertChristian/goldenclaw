@@ -25,6 +25,15 @@ def main(argv=None):
 
     sub.add_parser("doctor", help="verify NightClaw can find your usage data")
 
+    p_night = sub.add_parser("goodnight", help="run your backlog overnight, inside guardrails")
+    p_night.add_argument("--dry-run", action="store_true", help="show the plan without running")
+    p_night.add_argument("--budget", type=int, default=None, help="override night token budget")
+    p_night.add_argument("--yes", action="store_true",
+                         help="skip the confirmation prompt (after reviewing with --dry-run)")
+
+    sub.add_parser("morning", help="digest of what ran last night")
+    sub.add_parser("backlog", help="show the overnight task backlog")
+
     # AXI principle: no arguments shows live data, not help text.
     if not argv:
         argv = ["report"]
@@ -34,6 +43,29 @@ def main(argv=None):
         d = core.doctor()
         print(render.render_doctor(d))
         return 0 if d["ok"] else 1
+
+    if args.cmd == "goodnight":
+        from . import night
+        cfg = night.load_config()
+        return night.run_night(
+            cfg, budget_override=args.budget, dry_run=args.dry_run,
+            assume_yes=args.yes,
+        )
+
+    if args.cmd == "morning":
+        from . import night
+        journal_path, entries = night.latest_journal()
+        if journal_path is None:
+            print("No nights on record yet. Run `nightclaw goodnight` first.", file=sys.stderr)
+            return 1
+        print(render.render_morning(journal_path, entries, core.assemble(days=7)))
+        return 0
+
+    if args.cmd == "backlog":
+        from . import night
+        night._ensure_config()
+        print(night.BACKLOG.read_text())
+        return 0
 
     report = core.assemble(days=args.days)
     if report is None:

@@ -184,56 +184,165 @@ def _clock(hours):
     return "{:.0f}d {:.0f}h".format(hours // 24, hours % 24)
 
 
+def _pool_line(label, pct_left, detail, warn=None, measured=True):
+    left = pct_left / 100
+    color = GREEN if left > .5 else (YELLOW if left > .15 else RED)
+    mark = "" if measured else c("  ~", DIM)
+    out = ["  " + c("{:<20}".format(label), BOLD) + c(bar(left), color)
+           + "  " + c("{:.0f}% left".format(pct_left), BOLD, color) + mark]
+    if detail:
+        out.append(c(detail, DIM))
+    if warn:
+        out.append(c("    ⚠ " + warn, YELLOW))
+    return out
+
+
+def _reset_clock(iso):
+    if not iso:
+        return None
+    from datetime import datetime, timezone
+    try:
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    hours = (dt - datetime.now(timezone.utc)).total_seconds() / 3600
+    return _clock(hours) if hours > 0 else "now"
+
+
+def _live_lines(live):
+    lines = []
+    plan = (" · " + live["plan"].upper()) if live.get("plan") else ""
+    lines.append(c("  CLAUDE", BOLD) + c("   live from your account" + plan, DIM))
+    for w in live["windows"]:
+        left = w["percent_left"] / 100
+        color = GREEN if left > .5 else (YELLOW if left > .15 else RED)
+        lines.append("  " + c("{:<20}".format(w["label"]), BOLD) + c(bar(left), color)
+                     + "  " + c("{:.0f}% left".format(w["percent_left"]), BOLD, color))
+        reset = _reset_clock(w.get("resets_at"))
+        detail = "    {:.0f}% used".format(w["percent_used"])
+        if reset:
+            detail += " · resets in {}".format(reset)
+        lines.append(c(detail, DIM))
+    extra = live.get("extra_usage")
+    if extra:
+        lines.append(c("    extra usage: {} / {} {}".format(
+            extra.get("used_credits"), extra.get("monthly_limit"),
+            extra.get("currency") or ""), DIM))
+    return lines
+
+
 def render_quota(s):
     lines = ["", c("  🌙 NightClaw", BOLD, MAGENTA) + c("  — live quota", DIM), ""]
+    provs = s.get("providers", {})
+    claude = provs.get("claude", {})
+    live = s.get("live")
 
-    sess = s.get("session")
-    if sess and sess.get("active"):
-        lines.append("  " + c("Session (5h)", BOLD)
-                     + "  resets in {}".format(_clock(sess["minutes_left"] / 60))
-                     + c("  ·  {} tokens this window".format(fmt(sess["used_tokens"])), DIM))
+    if live:
+        lines.extend(_live_lines(live))
+        lines.append("")
+    else:
+        err = s.get("live_error")
+        if err:
+            lines.append(c("  Live quota unavailable — " + err["message"], YELLOW))
+            lines.append("")
+        sess = claude.get("session")
+        if sess and sess.get("active"):
+            lines.append("  " + c("Session (5h)", BOLD)
+                         + "  resets in {}".format(_clock(sess["minutes_left"] / 60))
+                         + c("  ·  {} tokens this window".format(fmt(sess["used_tokens"])), DIM))
+            lines.append("")
+        if claude.get("calibrated"):
+            lines.append(c("  CLAUDE", BOLD) + c("   estimated from calibration (offline)", DIM))
+            for pool in claude["pools"].values():
+                detail = "    ~${:.0f} of ~${:.0f} used · burn ${:.1f}/h · runway {}".format(
+                    pool["used_units"], pool["cap_units"],
+                    pool["burn_units_per_hour"], _clock(pool["runway_hours"]))
+                warn = ("at this burn rate you run out before the reset"
+                        if pool["exhausts_before_reset"] else None)
+                lines.extend(_pool_line(pool["label"], pool["percent_left"], detail, warn))
+            lines.append("")
+
+    manuals = [p for k, p in provs.items()
+               if k != "claude" and p.get("kind") == "manual"]
+    if manuals:
+        lines.append(c("  TRANSCRIBED", BOLD)
+                     + c("   readings you entered — not measured", DIM))
+        for p in manuals:
+            tag = "  [{}]".format(p["plan"]) if p.get("plan") else ""
+            if p["reset_passed"]:
+                lines.append("  " + c("{:<20}".format(p["label"] + tag), BOLD)
+                             + c("reset has passed — re-read the panel", DIM))
+                continue
+            detail = "    read {} ago · resets {} · in {}".format(
+                _clock(p["reading_age_hours"]), p["resets_at_human"],
+                _clock(p["hours_until_reset"]))
+            warn = ("this reading is {} old — treat as indicative only".format(
+                _clock(p["reading_age_hours"])) if p["stale"] else None)
+            lines.extend(_pool_line(p["label"] + tag, p["percent_left"],
+                                    detail, warn, measured=False))
         lines.append("")
 
-    if not s.get("calibrated"):
-        lines.append(c("  Remaining quota is not calibrated yet.", YELLOW))
-        lines.append("")
-        lines.append("  Your logs know what you " + c("consumed", BOLD)
-                     + "; only the provider knows your " + c("entitlement", BOLD) + ".")
-        lines.append("  Teach NightClaw yours once — open Claude's usage panel and run:")
-        lines.append("")
-        lines.append(c("    nightclaw calibrate --weekly 49 --fable 85 --resets \"Wed 3:00 PM\"", CYAN))
-        lines.append("")
-        lines.append(c("  From then on NightClaw tracks what's left, offline, with no credentials.", DIM))
-        lines.append("")
-        return "\n".join(lines)
-
-    if s.get("stale"):
-        lines.append(c("  ⚠ calibration is {} week(s) old — percentages drift; re-run "
-                       "`nightclaw calibrate`".format(s["weeks_since_calibration"]), YELLOW))
-        lines.append("")
-
-    for pool in s["pools"].values():
-        left = pool["percent_left"] / 100
-        color = GREEN if left > .5 else (YELLOW if left > .15 else RED)
-        lines.append("  " + c("{:<20}".format(pool["label"]), BOLD) + c(bar(left), color)
-                     + "  " + c("{:.0f}% left".format(pool["percent_left"]), BOLD, color))
-        detail = "    ~${:.0f} of ~${:.0f} used · burn ${:.1f}/h · runway {}".format(
-            pool["used_units"], pool["cap_units"], pool["burn_units_per_hour"],
-            _clock(pool["runway_hours"]))
-        lines.append(c(detail, DIM))
-        if pool["exhausts_before_reset"]:
-            lines.append(c("    ⚠ at this burn rate you run out before the reset", YELLOW))
-    lines.append("")
-
-    resets = s.get("resets_at_human") or s["resets_at"][:16].replace("T", " ")
-    lines.append("  Weekly reset  " + c(resets, BOLD)
-                 + c("  ·  in {}".format(_clock(s["hours_until_reset"])), DIM))
-    lines.append("")
-    lines.append(c("  Units are cost-weighted (USD-equivalent at API rates), not raw", DIM))
-    lines.append(c("  tokens — cache reads bill at ~0.1x and would distort a raw count.", DIM))
+    if live:
+        lines.append(c("  These are your provider's own numbers, fetched with the", DIM))
+        lines.append(c("  credential the Claude CLI already stores. Nothing is estimated.", DIM))
     lines.append("")
     lines.append(c("  Next steps", BOLD))
-    lines.append(c("    nightclaw calibrate ...   re-sync with the panel (do this weekly)", DIM))
-    lines.append(c("    claw how much is left     ask in plain English", DIM))
+    lines.append(c("    nightclaw            historical utilization & waste", DIM))
+    lines.append(c("    nightclaw quota --offline    skip the network call", DIM))
+    lines.append(c("    claw how much is left        ask in plain English", DIM))
     lines.append("")
     return "\n".join(lines)
+
+
+def render_menubar(s):
+    """SwiftBar / xbar plugin format: title line, ---, then dropdown rows."""
+    provs = s.get("providers", {})
+    tight = s.get("tightest")
+    out = []
+
+    if tight:
+        suffix = "" if tight.get("measured") else "~"
+        out.append("🌙 {:.0f}%{}".format(tight["percent_left"], suffix))
+    else:
+        out.append("🌙 —")
+    out.append("---")
+
+    claude = provs.get("claude", {})
+    sess = claude.get("session")
+    if sess and sess.get("active"):
+        out.append("Session resets in {} | color=#888888".format(
+            _clock(sess["minutes_left"] / 60)))
+
+    if claude.get("calibrated"):
+        out.append("Claude | color=#ffffff")
+        for pool in claude["pools"].values():
+            color = ("#4caf50" if pool["percent_left"] > 50
+                     else "#f5c451" if pool["percent_left"] > 15 else "#e05252")
+            out.append("--{}  {:.0f}% left | color={}".format(
+                pool["label"].replace("Weekly · ", ""), pool["percent_left"], color))
+            out.append("----${:.0f} of ${:.0f} · burn ${:.1f}/h · runway {} | color=#888888".format(
+                pool["used_units"], pool["cap_units"],
+                pool["burn_units_per_hour"], _clock(pool["runway_hours"])))
+        out.append("--resets in {} | color=#888888".format(
+            _clock(claude["hours_until_reset"])))
+    else:
+        out.append("Claude — not calibrated | color=#f5c451")
+
+    for name, p in provs.items():
+        if name == "claude" or p.get("kind") != "manual":
+            continue
+        tag = " [{}]".format(p["plan"]) if p.get("plan") else ""
+        if p["reset_passed"]:
+            out.append("{}{} — reset passed | color=#888888".format(p["label"], tag))
+            continue
+        color = ("#4caf50" if p["percent_left"] > 50
+                 else "#f5c451" if p["percent_left"] > 15 else "#e05252")
+        out.append("{}{}  ~{:.0f}% left | color={}".format(
+            p["label"], tag, p["percent_left"], color))
+        out.append("--read {} ago · resets in {} | color=#888888".format(
+            _clock(p["reading_age_hours"]), _clock(p["hours_until_reset"])))
+
+    out.append("---")
+    out.append("~ = transcribed reading, not measured | color=#888888")
+    out.append("Refresh | refresh=true")
+    return "\n".join(out)

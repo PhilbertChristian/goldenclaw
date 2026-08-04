@@ -28,6 +28,8 @@ def main(argv=None):
     p_quota = sub.add_parser("quota", help="live quota: how much is left, when it resets")
     p_quota.add_argument("--json", action="store_true", dest="as_json",
                          help="machine-readable")
+    p_quota.add_argument("--offline", action="store_true",
+                         help="skip the live usage API and use local data only")
 
     p_cal = sub.add_parser(
         "calibrate",
@@ -40,6 +42,14 @@ def main(argv=None):
                        help="percent used, Opus weekly pool")
     p_cal.add_argument("--resets", default=None,
                        help='weekly reset as shown in the panel, e.g. "Wed 3:00 PM"')
+    p_cal.add_argument("--provider", default="claude",
+                       help="provider to record (claude is measured; others are "
+                            "transcribed readings)")
+    p_cal.add_argument("--used", type=float, default=None,
+                       help="percent used, for a transcribed (non-Claude) provider")
+    p_cal.add_argument("--plan", default=None, help="plan label, e.g. PRO / MAX")
+
+    sub.add_parser("menubar", help="SwiftBar/xbar plugin output for the menu bar")
 
     p_night = sub.add_parser("goodnight", help="run your backlog overnight, inside guardrails")
     p_night.add_argument("--dry-run", action="store_true", help="show the plan without running")
@@ -69,12 +79,42 @@ def main(argv=None):
 
     if args.cmd == "quota":
         from . import quota
-        s = quota.state()
+        s = quota.state(allow_live=not args.offline)
         print(json.dumps(s, indent=2) if args.as_json else render.render_quota(s))
         return 0
 
-    if args.cmd == "calibrate":
+    if args.cmd == "menubar":
         from . import quota
+        print(render.render_menubar(quota.state()))
+        return 0
+
+    if args.cmd == "calibrate":
+        from . import quota, providers
+
+        if args.provider != "claude":
+            if not providers.is_known(args.provider):
+                print("Unknown provider '{}'. Known: {}".format(
+                    args.provider, ", ".join(sorted(providers.PROVIDERS))),
+                    file=sys.stderr)
+                return 1
+            if args.used is None or not args.resets:
+                print("Transcribed providers need --used and --resets, e.g.\n"
+                      '  nightclaw calibrate --provider codex --used 66 '
+                      '--resets "Fri 9:00 AM" --plan PRO',
+                      file=sys.stderr)
+                return 1
+            try:
+                providers.save_manual_reading(
+                    args.provider, args.used, args.resets, args.plan)
+            except ValueError as e:
+                print("Failed: {}".format(e), file=sys.stderr)
+                return 1
+            print("\n  ✓ Recorded {} at {:.0f}% used.".format(
+                providers.label(args.provider), args.used))
+            print("    This is a transcribed reading, not a measurement — "
+                  "NightClaw will\n    show its age so it can't pass for live data.\n")
+            return 0
+
         pools = {k: v for k, v in (("weekly", args.weekly), ("fable", args.fable),
                                    ("opus", args.opus)) if v is not None}
         if not pools or not args.resets:

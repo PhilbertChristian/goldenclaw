@@ -110,16 +110,14 @@ def consumed(dirs, t0, t1, match=None):
 
 
 def load():
-    if not CALIBRATION.is_file():
-        return None
-    try:
-        return json.loads(CALIBRATION.read_text())
-    except (json.JSONDecodeError, OSError):
-        return None
+    """The Claude (metered) calibration, if any."""
+    from . import providers
+    return providers.load_store()["providers"].get("claude")
 
 
 def save_reading(pools, reset_spec, now=None):
-    """Record a panel reading. pools: {pool_name: percent_used}."""
+    """Record a Claude panel reading. pools: {pool_name: percent_used}."""
+    from . import providers
     now = now or datetime.now(timezone.utc)
     reset_at = parse_reset(reset_spec, now.astimezone())
     dirs = core.find_log_dirs()
@@ -141,6 +139,8 @@ def save_reading(pools, reset_spec, now=None):
         }
 
     data = {
+        "kind": "metered",
+        "label": "Claude",
         "taken_at": now.isoformat(),
         "reset_at": reset_at.isoformat(),
         "week_start": week_start.isoformat(),
@@ -149,8 +149,9 @@ def save_reading(pools, reset_spec, now=None):
                  "week's window divided by the panel's percent-used. Units are "
                  "USD-equivalent at API rates, not raw tokens."),
     }
-    CALIBRATION.parent.mkdir(parents=True, exist_ok=True)
-    CALIBRATION.write_text(json.dumps(data, indent=2) + "\n")
+    store = providers.load_store()
+    store["providers"]["claude"] = data
+    providers.save_store(store)
     return data
 
 
@@ -176,13 +177,15 @@ def session_window(dirs, now=None):
     }
 
 
-def state(now=None):
-    """Full live quota picture, or None if not calibrated."""
+def claude_state(now=None):
+    """Live, measured quota for Claude — the one provider with local telemetry."""
     cal = load()
     now = now or datetime.now(timezone.utc)
     dirs = core.find_log_dirs()
     if cal is None:
-        return {"calibrated": False, "session": session_window(dirs, now)}
+        return {"calibrated": False, "kind": "metered", "label": "Claude",
+                "provider": "claude", "measured": True,
+                "session": session_window(dirs, now)}
 
     reset_at = datetime.fromisoformat(cal["reset_at"])
     week_start = datetime.fromisoformat(cal["week_start"])
@@ -223,6 +226,10 @@ def state(now=None):
 
     return {
         "calibrated": True,
+        "kind": "metered",
+        "provider": "claude",
+        "label": "Claude",
+        "measured": True,
         "calibrated_at": cal["taken_at"],
         "calibration_age_days": round((now - taken_at.astimezone(timezone.utc)).days),
         "stale": weeks_elapsed > 0,
@@ -239,9 +246,70 @@ def state(now=None):
     }
 
 
+def state(now=None, allow_live=True):
+    """Every provider's position.
+
+    Claude is answered by the live OAuth usage API when a credential is
+    available — that is ground truth, not an estimate. Calibration remains the
+    offline fallback, and other providers stay transcribed readings.
+    """
+    from . import providers
+
+    now = now or datetime.now(timezone.utc)
+    store = providers.load_store()
+    out = {"providers": {"claude": claude_state(now)}}
+
+    if allow_live:
+        from . import live
+        try:
+            snapshot = live.fetch()
+            out["live"] = snapshot
+            out["providers"]["claude"]["live"] = snapshot
+        except live.LiveUnavailable as e:
+            out["live_error"] = {"message": str(e), "signed_out": e.signed_out}
+
+    for name, entry in store["providers"].items():
+        if name == "claude":
+            continue
+        if entry.get("kind") == "manual":
+            out["providers"][name] = providers.manual_state(name, entry, now)
+
+    # Tightest pool across everything — what the menu bar title should show.
+    tightest = None
+    live_snapshot = out.get("live")
+    if live_snapshot:
+        for w in live_snapshot["windows"]:
+            cand = {"provider": "claude", "label": w["label"],
+                    "percent_left": w["percent_left"], "measured": True, "live": True}
+            if tightest is None or cand["percent_left"] < tightest["percent_left"]:
+                tightest = cand
+    for name, p in out["providers"].items():
+        if p.get("kind") == "metered":
+            if live_snapshot or not p.get("calibrated"):
+                continue
+            for pool in p["pools"].values():
+                cand = {"provider": name, "label": pool["label"],
+                        "percent_left": pool["percent_left"],
+                        "measured": True}
+                if tightest is None or cand["percent_left"] < tightest["percent_left"]:
+                    tightest = cand
+        elif not p.get("reset_passed"):
+            cand = {"provider": name, "label": p["label"],
+                    "percent_left": p["percent_left"], "measured": False}
+            if tightest is None or cand["percent_left"] < tightest["percent_left"]:
+                tightest = cand
+    out["tightest"] = tightest
+    out["unit"] = "cost-weighted USD-equivalent at API rates (metered providers only)"
+    return out
+
+
 def night_budget_guard(reserve_pct=15.0):
-    """Should the night shift run? Returns (ok, message)."""
-    s = state()
+    """Should the night shift run? Returns (ok, message).
+
+    Only measured providers can gate the night — a transcribed reading is not
+    a live number and must never silently authorize spending.
+    """
+    s = claude_state()
     if not s.get("calibrated"):
         return True, ("not calibrated — run `nightclaw calibrate` so the night "
                       "shift can protect your weekly quota")

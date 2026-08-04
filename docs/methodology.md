@@ -130,3 +130,42 @@ re-calibrating fixes it in one command.
   runs on, so it will under-measure consumption and over-estimate the cap.
 - A calibration older than its weekly window is flagged stale rather than
   silently trusted.
+
+
+---
+
+## Live quota (v0.5)
+
+Calibration exists because entitlement is unpublished. It turns out it isn't:
+the Claude CLI authenticates against an endpoint that reports it directly.
+
+    GET https://api.anthropic.com/api/oauth/usage
+    Authorization: Bearer <token from local credential store>
+    anthropic-beta: oauth-2025-04-20
+
+The response is a flat object keyed by window (`five_hour`, `seven_day`,
+`seven_day_opus`, `seven_day_sonnet`, `extra_usage`), each carrying
+`utilization` (percent **used**) and `resets_at`. So `nightclaw quota` reports
+ground truth with no estimation at all, and the proxy and calibration become
+the offline fallback rather than the primary answer.
+
+### Credential handling
+
+- Read in `live.py` and nowhere else; never printed, logged, returned, or
+  persisted.
+- macOS reads the Keychain first (`Claude Code-credentials`). Claude Code
+  refreshes that item in place, while `~/.claude/.credentials.json` is often a
+  stale leftover — trusting the file first is the known cause of tools
+  reporting "signed out" for a perfectly valid session.
+- Expired candidates are discarded before use; a 401/403 falls through to the
+  next candidate rather than concluding you are signed out.
+
+### Rules preserved
+
+- A window with no numeric `utilization` is **omitted**, never defaulted to 0 —
+  a missing window must not render as "0% used".
+- Percent-used and percent-left are the same axis from opposite ends; labels,
+  numbers, and bars always agree.
+- The live response is canonical. Field names may change without notice, so
+  parsing is defensive and an unparsable response degrades to the offline path
+  rather than inventing a number.

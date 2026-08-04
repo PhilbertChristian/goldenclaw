@@ -57,8 +57,10 @@ No accounts. No API keys. No config. Your first report renders in seconds.
 - **Small enough to understand.** A handful of files, zero dependencies,
   stdlib Python. You can read the entire codebase before trusting it with
   anything — and you should.
-- **Local-first, read-only.** NightClaw parses logs your tools already write.
-  It makes no network calls and mutates nothing.
+- **Local-first, read-only.** NightClaw parses logs your tools already write
+  and mutates nothing. Exactly one feature reaches the network — `quota`, which
+  asks your provider for your own quota using the credential its CLI already
+  stored. `--offline` disables even that.
 - **Honest numbers.** Every figure is reconstructable from your own logs, and
   the methodology prints next to the number. Where estimation is required,
   NightClaw is deliberately conservative: the utilization proxy *overstates*
@@ -90,10 +92,13 @@ is on the roadmap.
 
 ## What leaves your machine
 
-**Nothing.** NightClaw reads local JSONL files and prints to your terminal.
-No telemetry, no analytics, no phone-home, no account. The `pipx install`
-contacts GitHub to fetch the code; after that, NightClaw never touches the
-network.
+**One request, to your own provider.** `nightclaw quota` sends your stored
+Claude credential to `api.anthropic.com/api/oauth/usage` and reads back your
+own quota percentages. That is the entire network surface.
+
+No telemetry, no analytics, no phone-home, no account, and no third party ever
+sees anything. Your logs, prompts, and token counts never leave the machine.
+`nightclaw quota --offline` and every other command are fully offline.
 
 ## Usage
 
@@ -106,38 +111,48 @@ nightclaw doctor              # verify NightClaw can find your usage data
 
 ### How much is left? (live quota)
 
-Your logs know what you **consumed**. Only the provider knows your
-**entitlement** — and its usage panel forgets everything past a week. Join
-them once:
-
 ```bash
-nightclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"
 nightclaw quota
 ```
 
 ```
-  Session (5h)  resets in 3h  ·  26.1M tokens this window
-
-  Weekly · all models ▐█████████████░░░░░░░░░░░░░▌  51% left
-    ~$48 of ~$98 used · burn $0.4/h · runway 5d 2h
-  Weekly · Fable      ▐████░░░░░░░░░░░░░░░░░░░░░░▌  15% left
-    ~$42 of ~$50 used · burn $0.4/h · runway 21h
-    ⚠ at this burn rate you run out before the reset
+  CLAUDE   live from your account · MAX
+  session (5h)        ▐█████████████████████░░░░░▌  82% left
+    18% used · resets in 9m
+  week · all models   ▐████████████░░░░░░░░░░░░░░▌  46% left
+    54% used · resets in 40h
 ```
 
-You read your panel's percentages once; NightClaw back-solves your capacity
-from consumption it measured independently over the same window, then tracks
-what's left **offline, forever** — no credentials, no API tokens, no
-scraping. Re-run `calibrate` weekly (or whenever the panel and NightClaw
-disagree) — it's self-correcting.
+**These are your provider's own numbers, not an estimate.** NightClaw reads
+the OAuth credential the Claude CLI already stores on your machine (macOS
+Keychain, or `~/.claude/.credentials.json`) and asks Anthropic's own usage
+endpoint — the same data behind `/usage`. Nothing is inferred.
 
-Consumption is measured in **cost-weighted units**, not raw tokens: cache
-reads bill at ~0.1× input, so a raw-token count swings wildly with your
-cache-hit ratio. Full reasoning in [docs/methodology.md](docs/methodology.md).
+This is the **only** part of NightClaw that touches the network, and it only
+ever talks to `api.anthropic.com`, with your own credential, about your own
+account. The token is read in one module, never printed, never logged, never
+written anywhere. Skip it entirely with `nightclaw quota --offline`.
 
-Once calibrated, the night shift protects you automatically — `goodnight`
-refuses to run if it would eat into your morning reserve
-(`weekly_reserve_pct`, default 15%).
+<details>
+<summary>Offline fallback: calibration</summary>
+
+Without a credential, NightClaw can still estimate remaining quota. You read
+your panel's percentages once and it back-solves your capacity from
+consumption it measured independently over the same window:
+
+```bash
+nightclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"
+nightclaw quota --offline
+```
+
+Other providers have no local telemetry at all, so they're transcribed
+readings — stored with a timestamp and always shown with their age, so a
+stale number can never pass for a live one:
+
+```bash
+nightclaw calibrate --provider codex --used 66 --resets "Fri 9:00 AM" --plan PRO
+```
+</details>
 
 ### Just talk to it
 

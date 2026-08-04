@@ -24,7 +24,8 @@ def main(argv=None):
     p_json.add_argument("--days", type=int, default=7, help="lookback period (default 7)")
 
     sub.add_parser("doctor", help="verify GoldenClaw can find your usage data")
-    sub.add_parser("boot", help="wake the dog — banner and environment check")
+    sub.add_parser("boot", help="banner and environment check")
+    sub.add_parser("wakeup", help="wake Max — he tells you what is left")
 
     p_quota = sub.add_parser("quota", help="live quota: how much is left, when it resets")
     p_quota.add_argument("--json", action="store_true", dest="as_json",
@@ -77,6 +78,10 @@ def main(argv=None):
         from . import boot
         boot.sequence()
         return 0
+
+    if args.cmd == "wakeup":
+        from . import boot
+        return boot.wakeup()
 
     if args.cmd == "doctor":
         d = core.doctor()

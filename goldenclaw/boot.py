@@ -8,7 +8,7 @@ one-glance `doctor`. Honest even in the ASCII art.
 import sys
 import time
 
-from .render import BOLD, CYAN, DIM, GREEN, MAGENTA, RESET, YELLOW, c
+from .render import BOLD, CYAN, DIM, GREEN, MAGENTA, RED, RESET, YELLOW, bar, c, fmt
 
 DOG_SLEEPING = r"""
                                           z
@@ -137,3 +137,100 @@ def banner(waking=False, stream=None):
         stream.write(c("  " + row, YELLOW if waking else CYAN) + "\n")
     stream.write("\n")
     stream.flush()
+
+
+def _max_quip(verdict, session_left):
+    """Max's one-liner — personality on top of REAL numbers, never instead of
+    them. The quip is presentation; every figure in it comes from the data."""
+    from . import forecast
+    if verdict is None:
+        return "fresh week — the bowl's full. 🐾"
+    if verdict["verdict"] == forecast.SHORTFALL:
+        return ("easy, chief — at this pace you hit the wall in ~{:.0f}h, "
+                "before the reset. I'd slow down.".format(verdict["hours_to_wall"]))
+    if verdict["verdict"] == forecast.WASTE:
+        return ("plenty in the tank — but ~{:.0f}% of the week expires unused "
+                "at this pace. throw me a bone tonight? (`goodnight`)".format(
+                    verdict["projected_unused_pct"]))
+    if session_left is not None and session_left < 15:
+        return "on pace for the week — but this session's nearly out. short break? 🐾"
+    return "right on pace. good human. 🐾"
+
+
+def wakeup(stream=None):
+    """The front door: wake Max, he tells you what's left. Fast, free, fun.
+
+    No agent session is launched — checking your quota must never spend your
+    quota. Max's numbers come from the live usage API; his commentary is
+    keyed off the real forecast verdict.
+    """
+    import shutil as _sh
+
+    from . import core, forecast
+
+    stream = stream or sys.stdout
+    wake_animation(stream)
+    _line("  " + c("Max is up.", BOLD, YELLOW) + c("  🐾  GoldenClaw", DIM), 0.05, stream)
+    _line("", 0, stream)
+
+    # What's left — the whole point.
+    snap = None
+    session_left = None
+    verdict = None
+    try:
+        from . import live
+        snap = live.fetch()
+    except Exception:
+        pass
+
+    if snap:
+        plan = ("  ·  " + snap["plan"].upper() + " plan") if snap.get("plan") else ""
+        _line("  " + c("Max checked the tank" + plan + ":", BOLD), 0.04, stream)
+        for w in snap["windows"]:
+            left = w["percent_left"]
+            color = GREEN if left > 50 else (YELLOW if left > 15 else RED)
+            reset = ""
+            if w.get("resets_at"):
+                from datetime import datetime, timezone
+                try:
+                    dt = datetime.fromisoformat(w["resets_at"].replace("Z", "+00:00"))
+                    hours = (dt - datetime.now(timezone.utc)).total_seconds() / 3600
+                    if hours > 0:
+                        reset = " · resets in {:.0f}h".format(hours) if hours >= 1 \
+                            else " · resets in {:.0f}m".format(hours * 60)
+                except ValueError:
+                    pass
+            _line("    {:<18} ".format(w["label"])
+                  + c(bar(left / 100, width=14), color) + " "
+                  + c("{:.0f}% left".format(left), BOLD, color)
+                  + c(reset, DIM), 0.05, stream)
+            if w["id"] == "five_hour":
+                session_left = left
+            if w["id"] == "seven_day":
+                verdict = forecast.week_verdict(w)
+        _line("", 0, stream)
+        _line("  " + c("Max says:", BOLD, YELLOW) + " "
+              + _max_quip(verdict, session_left), 0.05, stream)
+    else:
+        _line("  " + c("Max can't reach your quota.", YELLOW), 0, stream)
+        if _sh.which("claude") is None:
+            _line(c("    He reads the credential your Claude CLI stores — install", DIM), 0, stream)
+            _line(c("    Claude Code and sign in once, then wake him again:", DIM), 0, stream)
+            _line(c("      npm install -g @anthropic-ai/claude-code && claude", DIM), 0, stream)
+        else:
+            _line(c("    Sign in with `claude`, then wake him again.", DIM), 0, stream)
+
+    # The week so far, per model — small print under the headline.
+    rep = core.assemble(days=7)
+    if rep and rep.get("est_api_value_by_model"):
+        _line("", 0, stream)
+        _line(c("  This week: {} tokens · ${:,.2f} at API rates".format(
+            fmt(rep["tokens"]["total"]), rep["est_api_value_usd"]), DIM), 0.03, stream)
+        for model, usd in list(rep["est_api_value_by_model"].items())[:4]:
+            _line(c("    {:<26} {:>8}   ${:,.2f}".format(
+                model, fmt(rep["by_model"][model]["total"]), usd), DIM), 0.02, stream)
+
+    _line("", 0, stream)
+    _line(c("  more: `max` talk to him · `tokens` history · `goodnight` night shift", DIM), 0, stream)
+    _line("", 0, stream)
+    return 0

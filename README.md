@@ -40,6 +40,20 @@ waste, then put the idle hours — mostly the ones you spend asleep — to work.
 
 ```bash
 pipx install git+https://github.com/PhilbertChristian/goldenclaw
+goldenclaw
+```
+
+```
+        |\      _,,,---,,_
+        /,`.-'`'    -.  ;-;;,_
+       |,4-  ) )-,_..;\ (  `'-'
+      '---''(_/--'  `-'\_)
+           ( Max is sleeping )
+```
+
+That's it — that's the whole command. Max is asleep. Wake him:
+
+```bash
 goldenclaw wakeup
 ```
 

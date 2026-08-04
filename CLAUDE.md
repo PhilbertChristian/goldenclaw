@@ -13,7 +13,7 @@ is the intended customization model — this file orients you.
   keep specific prefixes before general ones) + `estimate_cost`. User
   override: `~/.config/goldenclaw/pricing.json`.
 - `goldenclaw/render.py` — ANSI presentation only, no logic. Respects
-  `NO_COLOR` and non-TTY. Bare `goldenclaw` must show live data, never help.
+  `NO_COLOR` and non-TTY. Bare `goldenclaw` shows Max asleep — only the dog; `wakeup` wakes him with the data.
 - `goldenclaw/cli.py` — argparse; subcommands `report` (default), `json`,
   `doctor`, `boot`, `quota`, `calibrate`, `goodnight`, `morning`, `backlog`,
   `ask`, `chat`, `menubar`.

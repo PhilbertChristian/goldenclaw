@@ -69,9 +69,12 @@ def main(argv=None):
     p_chat = sub.add_parser("chat", help="talk to the GoldenClaw agent interactively")
     p_chat.add_argument("--model", default=None, help="model override for the agent")
 
-    # AXI principle: no arguments shows live data, not help text.
+    # Bare `goldenclaw` shows exactly one thing: Max, asleep. Waking him
+    # (`wakeup`) is what fetches the data. The report lives at `report`.
     if not argv:
-        argv = ["report"]
+        from . import boot
+        boot.banner()
+        return 0
     args = parser.parse_args(argv)
 
     if args.cmd == "boot":

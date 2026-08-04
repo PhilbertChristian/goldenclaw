@@ -161,9 +161,16 @@ In the NanoClaw spirit — no monitoring dashboard, ask the agent — GoldenClaw
 ships a conversation layer over the data:
 
 ```bash
-goldenclaw ask "how's my utilization this month?"
-goldenclaw chat        # full interactive session
+max                                      # talk to Max directly (alias for `goldenclaw chat`)
+goldenclaw ask "how are we looking this week?"
 ```
+
+Max answers in his own voice, under one iron rule: **he never invents a
+number** — every figure comes from running the sensor first. He can read
+your live quota, explain where the week went, forecast whether you're
+wasting or running out, queue overnight tasks into the backlog, and explain
+any past night from its journal. He cannot run the night from chat (you run
+`goodnight`), and he will not change his own permission mode.
 
 `ask` launches a headless Claude Code session that is pre-approved to run
 **only** `goldenclaw` commands — it answers from real sensor runs and can't

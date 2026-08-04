@@ -146,6 +146,21 @@ def plan(cfg, tasks):
     return runnable, problems
 
 
+def _live_week_left():
+    """Weekly percent-left from the live usage API, or None when unreachable.
+    A network failure never blocks the night — the token budget still caps it —
+    but a *successful* read below the reserve stops spending immediately."""
+    try:
+        from . import live
+        snap = live.fetch()
+    except Exception:
+        return None
+    for w in snap.get("windows", []):
+        if w.get("id") == "seven_day":
+            return w.get("percent_left")
+    return None
+
+
 def run_night(cfg, budget_override=None, dry_run=False, assume_yes=False, out=print):
     created = _ensure_config()
     for path in created:
@@ -183,9 +198,17 @@ def run_night(cfg, budget_override=None, dry_run=False, assume_yes=False, out=pr
         out("  Nothing runnable. Add your repos to {} first.".format(NIGHT_CONFIG))
         return 1
 
-    from . import quota
-    guard_ok, guard_msg = quota.night_budget_guard(
-        float(cfg.get("weekly_reserve_pct", 15)))
+    reserve_cfg = float(cfg.get("weekly_reserve_pct", 15))
+    week_left = _live_week_left()
+    if week_left is not None:
+        # Ground truth beats any estimate — stale calibration must never veto
+        # (or authorize) a night when the live number is available.
+        guard_ok = week_left > reserve_cfg
+        guard_msg = "live — {:.0f}% of the week left (reserve {:.0f}%)".format(
+            week_left, reserve_cfg)
+    else:
+        from . import quota
+        guard_ok, guard_msg = quota.night_budget_guard(reserve_cfg)
     out("")
     out("  Quota check: {}".format(guard_msg))
     if not guard_ok:
@@ -212,7 +235,7 @@ def run_night(cfg, budget_override=None, dry_run=False, assume_yes=False, out=pr
             out("    then re-run with --yes to confirm the launch explicitly.")
             return 1
         try:
-            answer = input("  Launch the night shift as planned? Type 'run' to confirm: ")
+            answer = input("  Should Max hold the fort? Type 'run' to confirm: ")
         except EOFError:
             answer = ""
         if answer.strip().lower() != "run":
@@ -227,7 +250,19 @@ def run_night(cfg, budget_override=None, dry_run=False, assume_yes=False, out=pr
     spent = 0
     out("")
     with open(journal_path, "a") as journal:
+        reserve = float(cfg.get("weekly_reserve_pct", 15))
         for t in runnable:
+            week_left = _live_week_left()
+            if week_left is not None and week_left <= reserve:
+                out("  ⛔ live check: weekly quota at {:.0f}% — at your reserve "
+                    "({:.0f}%). Max stops here; your morning tank comes first.".format(
+                        week_left, reserve))
+                journal.write(json.dumps({
+                    "type": "reserve_stop", "week_left_pct": week_left,
+                    "reserve_pct": reserve,
+                    "at": datetime.now(timezone.utc).isoformat(),
+                }) + "\n")
+                break
             if spent >= budget:
                 out("  ⛔ budget spent ({:,} tokens) — stopping. Remaining tasks stay in the backlog.".format(spent))
                 journal.write(json.dumps({

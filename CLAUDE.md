@@ -25,6 +25,12 @@ is the intended customization model — this file orients you.
   calibration fallback, and transcribed non-Claude readings.
 - `sleepclaw/boot.py` — the sleepy-puppy boot sequence. Its status lines are
   real environment checks, not decoration; keep them honest.
+- `sleepclaw/forecast.py` — Max's brain: WASTE/PACE/SHORTFALL verdicts from a
+  straight-line pace projection (basis always stated), and task-cost estimates
+  from real past journals only — no history, no estimate.
+- `sleepclaw/ritual.py` — the 9pm goodnight experience: wake animation, day
+  review, live budget, verdict, task collection, budget ask, then the guarded
+  runner. Non-TTY falls back to the plain backlog flow.
 - `sleepclaw/agent.py` — the conversation layer: `ask` (headless, allowed
   tools locked to `Bash(sleepclaw:*)`) and `chat` (interactive) over the
   Claude Code CLI. The agent must never invent numbers — the system prompt
@@ -61,6 +67,7 @@ doesn't report). Add its rates to `pricing.py`, wire it into `assemble` and
 ## Testing changes
 
 ```bash
+python3 -m unittest discover tests
 python3 -m sleepclaw doctor
 python3 -m sleepclaw
 python3 -m sleepclaw json | python3 -m json.tool > /dev/null

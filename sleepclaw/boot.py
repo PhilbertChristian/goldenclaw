@@ -30,6 +30,41 @@ DOG_WAKING = r"""
 """
 
 
+DOG_STIRRING = r"""
+                                     z
+        |\      _,,,---,,_
+        /,`.-'`'    -.  ;-;;,_
+       |,4-  ) )-,_..;\ (  `'-'
+      '---''(_/--'  `-'\_)
+              ...mmh?
+"""
+
+
+def wake_animation(stream=None, delay=0.55):
+    """Max wakes up: sleeping -> stirring -> stretching, redrawn in place.
+    Non-TTY streams get only the final frame (no cursor tricks in pipes)."""
+    stream = stream or sys.stdout
+    frames = [(DOG_SLEEPING, CYAN), (DOG_STIRRING, CYAN), (DOG_WAKING, YELLOW)]
+    if not stream.isatty():
+        for row in DOG_WAKING.strip("\n").split("\n"):
+            stream.write("  " + row + "\n")
+        stream.flush()
+        return
+    prev_height = 0
+    for i, (art, color) in enumerate(frames):
+        rows = art.strip("\n").split("\n")
+        if prev_height:
+            stream.write("\033[{}F\033[J".format(prev_height))
+        for row in rows:
+            stream.write(c("  " + row, color) + "\n")
+        stream.flush()
+        prev_height = len(rows)
+        if i < len(frames) - 1:
+            time.sleep(delay)
+    stream.write("\n")
+    stream.flush()
+
+
 def _line(text, delay=0.06, stream=None):
     stream = stream or sys.stdout
     try:

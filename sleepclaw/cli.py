@@ -148,10 +148,9 @@ def main(argv=None):
         return 0
 
     if args.cmd == "goodnight":
-        from . import boot, night
-        boot.banner()
+        from . import night, ritual
         cfg = night.load_config()
-        return night.run_night(
+        return ritual.goodnight(
             cfg, budget_override=args.budget, dry_run=args.dry_run,
             assume_yes=args.yes,
         )
@@ -161,9 +160,20 @@ def main(argv=None):
         boot.banner(waking=True)
         journal_path, entries = night.latest_journal()
         if journal_path is None:
-            print("No nights on record yet. Run `sleepclaw goodnight` first.", file=sys.stderr)
+            print("Max hasn't worked a night yet. Run `sleepclaw goodnight` before bed.",
+                  file=sys.stderr)
             return 1
         print(render.render_morning(journal_path, entries, core.assemble(days=7)))
+        # End the morning report on what you have NOW — today's tank, live.
+        try:
+            from . import live
+            snap = live.fetch()
+            parts = ["{} {:.0f}% left".format(w["label"], w["percent_left"])
+                     for w in snap["windows"]]
+            print("  " + render.c("Max:", render.BOLD, render.YELLOW)
+                  + " today's tank — " + " · ".join(parts) + "\n")
+        except Exception:
+            pass
         return 0
 
     if args.cmd == "backlog":

@@ -172,18 +172,53 @@ where normal permission prompts apply, so you can also manage your backlog
 conversationally ("queue up test-writing for the api repo tonight").
 Requires the `claude` CLI.
 
-### The night shift
+### Meet Max 🐕 (experimental)
+
+Max is a golden retriever who guards your token budget. The ritual: **wake
+him before bed.**
 
 ```bash
-sleepclaw backlog                 # your overnight task list (~/.config/sleepclaw/backlog.md)
-sleepclaw goodnight --dry-run     # validate the plan: repos, budget, timeouts
-sleepclaw goodnight               # run it — confirmation required
-sleepclaw morning                 # digest: what ran, what it cost, how it exited
+sleepclaw goodnight
 ```
+
+Max wakes up (there's an animation), reviews your day, checks your live
+budget, and gives you a verdict at this week's average pace:
+
+```
+  Max is up.  golden retriever · night watch
+
+  Today's review:
+    39.0M tokens (~$49.09 at API rates)
+
+  Max checked your budget:
+    session (5h)       86% left · resets in 2h
+    week · all models  42% left · resets in 23h
+
+  Max: 🟡 at this week's average pace, ~33% of your weekly quota
+       expires unused at the reset. That's the part I can put to work.
+```
+
+Then he asks **"What should I fetch before you sleep?"** — you queue tasks
+one per line, he estimates the cost from your own past runs (no history
+means no estimate, never an invented number), asks how many tokens he may
+spend, and holds the fort overnight using the guarded runner below. In the
+morning, `sleepclaw morning`: what ran, what it cost, and today's tank.
+
+Max adapts to your plan. On a tight week he tells you when you'll hit the
+wall — and **refuses to spend anything overnight**. On a loose week he tells
+you what's about to expire unused. Same dog, opposite advice, both honest.
+
+**The night shift is experimental**: the runner below works and is tested at
+the seams, but it has not yet run a real production night. Treat it
+accordingly.
+
+### The night runner (what Max drives)
 
 Tasks are one line each — `- [ ] repo: task description` — and only repos you
 name in `~/.config/sleepclaw/night.json`'s allowlist can be touched. The
-night stops when the token budget is spent; every run is journaled.
+night stops when the token budget is spent — and between every task Max
+re-checks your **live** weekly quota, stopping the moment it touches your
+morning reserve (`weekly_reserve_pct`, default 15%). Every run is journaled.
 
 **The safety model is opt-in by design.** There is *no default* permission
 mode: before anything runs unattended you must explicitly write one into

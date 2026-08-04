@@ -1,10 +1,10 @@
 """The night shift — run your backlog while you sleep, inside guardrails.
 
-`nightclaw goodnight` reads unchecked tasks from the backlog, validates every
+`sleepclaw goodnight` reads unchecked tasks from the backlog, validates every
 task against the repo allowlist, then runs each one headlessly via the
 `claude` CLI. Between tasks it re-reads the local sensor to enforce a hard
 per-night token budget. Everything is journaled to a per-night JSONL file
-that `nightclaw morning` renders.
+that `sleepclaw morning` renders.
 
 Guardrails (deliberate, documented):
   - only repos named in night.json's allowlist can be touched
@@ -29,7 +29,7 @@ from pathlib import Path
 
 from . import core
 
-CONFIG_DIR = Path.home() / ".config" / "nightclaw"
+CONFIG_DIR = Path.home() / ".config" / "sleepclaw"
 NIGHT_CONFIG = CONFIG_DIR / "night.json"
 BACKLOG = CONFIG_DIR / "backlog.md"
 NIGHTS_DIR = CONFIG_DIR / "nights"
@@ -54,11 +54,11 @@ DEFAULT_CONFIG = {
 ALLOWED_MODES = ("default", "plan", "acceptEdits")
 
 BACKLOG_TEMPLATE = """\
-# NightClaw backlog — one task per line, format: `- [ ] repo: task`
+# SleepClaw backlog — one task per line, format: `- [ ] repo: task`
 # `repo` must be a key in night.json's "repos" allowlist.
-# NightClaw checks tasks off as they succeed.
+# SleepClaw checks tasks off as they succeed.
 
-# - [ ] nightclaw: add unit tests for window reconstruction in core.py
+# - [ ] sleepclaw: add unit tests for window reconstruction in core.py
 """
 
 
@@ -263,7 +263,7 @@ def run_night(cfg, budget_override=None, dry_run=False, assume_yes=False, out=pr
 
     out("")
     out("  Night complete — {:,} tokens spent. Journal: {}".format(spent, journal_path))
-    out("  Run `nightclaw morning` when you wake up. 🌅")
+    out("  Run `sleepclaw morning` when you wake up. 🌅")
     return 0
 
 

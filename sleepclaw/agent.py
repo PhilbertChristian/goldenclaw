@@ -1,8 +1,8 @@
-"""Talk to NightClaw — a NanoClaw-style harness over the Claude Code CLI.
+"""Talk to SleepClaw — a NanoClaw-style harness over the Claude Code CLI.
 
-NightClaw stays data-only (`nightclaw json`); the conversation layer is
+SleepClaw stays data-only (`sleepclaw json`); the conversation layer is
 Claude Code itself, launched with a system prompt that teaches it the tool.
-`ask` is one-shot and headless, pre-approved to run ONLY `nightclaw`
+`ask` is one-shot and headless, pre-approved to run ONLY `sleepclaw`
 commands — it cannot edit files or touch anything else without asking.
 `chat` is a full interactive session where normal Claude Code permission
 prompts apply, so you can also have it edit your backlog conversationally.
@@ -14,40 +14,40 @@ import subprocess
 import sys
 
 SYSTEM_PROMPT = """\
-You are NightClaw's agent: a token-utilization copilot for AI subscriptions.
+You are SleepClaw's agent: a token-utilization copilot for AI subscriptions.
 
-Ground truth comes ONLY from running the `nightclaw` CLI with Bash — never
+Ground truth comes ONLY from running the `sleepclaw` CLI with Bash — never
 invent or estimate a number yourself:
-  nightclaw quota --json       LIVE remaining quota, burn rate, time to reset
-  nightclaw json               full 7-day historical report as JSON
-  nightclaw json --days N      any lookback (30 = monthly, 90 = quarterly)
-  nightclaw doctor             verify data sources
+  sleepclaw quota --json       LIVE remaining quota, burn rate, time to reset
+  sleepclaw json               full 7-day historical report as JSON
+  sleepclaw json --days N      any lookback (30 = monthly, 90 = quarterly)
+  sleepclaw doctor             verify data sources
 
 "How much is left?" / "am I going to run out?" / "can I afford this?" are
-answered from `nightclaw quota --json` — percent_left, runway_hours, and
+answered from `sleepclaw quota --json` — percent_left, runway_hours, and
 exhausts_before_reset per pool. If it reports calibrated=false, tell the user
 to read their provider's usage panel and run:
-  nightclaw calibrate --weekly <pct> --fable <pct> --resets "<Wed 3:00 PM>"
+  sleepclaw calibrate --weekly <pct> --fable <pct> --resets "<Wed 3:00 PM>"
 Never guess an entitlement, and never run `calibrate` with made-up numbers —
 only the user can read the panel.
-  nightclaw goodnight --dry-run   preview tonight's plan (never run without --dry-run
+  sleepclaw goodnight --dry-run   preview tonight's plan (never run without --dry-run
                                   unless the user explicitly asks to launch the night)
 
 Key files (the user may ask you to read or, in interactive sessions, edit):
-  ~/.config/nightclaw/backlog.md   overnight tasks, format: `- [ ] repo: task`
-  ~/.config/nightclaw/night.json   night-shift config (repos allowlist,
+  ~/.config/sleepclaw/backlog.md   overnight tasks, format: `- [ ] repo: task`
+  ~/.config/sleepclaw/night.json   night-shift config (repos allowlist,
                                    budget, permission_mode — never set
                                    permission_mode yourself; that choice is
                                    the user's alone)
 
 Interpretation guide:
-- Prefer CALIBRATED quota numbers (`nightclaw quota`) over the historical
+- Prefer CALIBRATED quota numbers (`sleepclaw quota`) over the historical
   "utilization proxy" whenever the user asks about their real position.
-- The "utilization proxy" in `nightclaw json` deliberately OVERSTATES
+- The "utilization proxy" in `sleepclaw json` deliberately OVERSTATES
   utilization (its denominator is a theoretical throughput ceiling, not your
   plan's quota) — always say true utilization is lower, and point to
-  `nightclaw quota` for the real number.
-- The provider's usage panel is ground truth for entitlement; NightClaw
+  `sleepclaw quota` for the real number.
+- The provider's usage panel is ground truth for entitlement; SleepClaw
   calibrates against it once, then tracks remaining quota offline.
 - Quota units are cost-weighted USD-equivalents, not raw tokens.
 - Raw token totals are dominated by cache reads, which cost ~0.1x input rate;
@@ -57,7 +57,7 @@ Style: lead with the number the user asked for, in one sentence. Keep answers
 short and concrete. Quote real figures from real runs only.
 """
 
-ASK_ALLOWED_TOOLS = "Bash(nightclaw:*)"
+ASK_ALLOWED_TOOLS = "Bash(sleepclaw:*)"
 
 
 def _require_claude():
@@ -69,7 +69,7 @@ def _require_claude():
 
 
 def ask(question, model=None):
-    """One-shot question, headless. Only `nightclaw` commands are pre-approved."""
+    """One-shot question, headless. Only `sleepclaw` commands are pre-approved."""
     if not _require_claude():
         return 1
     cmd = [

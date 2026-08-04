@@ -11,22 +11,28 @@ import time
 from .render import BOLD, CYAN, DIM, GREEN, MAGENTA, RESET, YELLOW, c
 
 DOG_SLEEPING = r"""
-                                          z
-                                     z
-                                Z
-        |\      _,,,---,,_
-        /,`.-'`'    -.  ;-;;,_
-       |,4-  ) )-,_..;\ (  `'-'
-      '---''(_/--'  `-'\_)
+                                    z
+                                 z
+                              Z
+                             ______
+          __________________/      \
+        /                   \  -  - |
+       |                    |\   ▾  |
+       |      (  ~~~  )     | )  ᵕ  /
+        \                   |/ \___/
+         \____(__)______(__)_______/
 """
 
 DOG_WAKING = r"""
-                                    * ~ *
-        |\      _,,,---,,_
-        /,`.-'`'    -.  ;-;;,_
-       |,4-  ) )-,_..;\ (  `'-'
-      '---''(_/--'  `-'\_)
-             ( stretch )
+                                  * ~ *
+                             ______
+          __________________/      \
+        /                   \  ^  ^ |
+       |                    |\   ▾  |
+       |      (  ~~~  )     | )  ᴗ  /
+        \                   |/ \___/
+         \____(__)______(__)_______/
+                 ( stretch )
 """
 
 
@@ -64,7 +70,7 @@ def sequence(stream=None, delay=0.06):
     for row in DOG_SLEEPING.strip("\n").split("\n"):
         _line(c("  " + row, CYAN), delay * 0.5, stream)
     _line("", delay, stream)
-    _line("  " + c("N I G H T C L A W", BOLD, MAGENTA)
+    _line("  " + c("S L E E P C L A W", BOLD, MAGENTA)
           + c("   your subscription works the night shift", DIM), delay, stream)
     _line("", delay, stream)
 
@@ -73,8 +79,8 @@ def sequence(stream=None, delay=0.06):
         _line("  {} {:<12} {}".format(mark, label, c(detail, DIM)), delay, stream)
 
     _line("", delay, stream)
-    _line(c("  nightclaw quota    what's left right now (live)", DIM), delay, stream)
-    _line(c("  nightclaw          where it went, and what expired unused", DIM), delay, stream)
+    _line(c("  sleepclaw quota    what's left right now (live)", DIM), delay, stream)
+    _line(c("  sleepclaw          where it went, and what expired unused", DIM), delay, stream)
     _line(c("  goodnight          put the idle hours to work", DIM), delay, stream)
     _line("", 0, stream)
 

@@ -3,7 +3,7 @@
 Local logs record what you *consumed*; they don't know your *entitlement*.
 The provider's usage panel knows the entitlement but forgets history. This
 module joins them: you enter a panel reading once ("weekly: 49% used, resets
-Wed 3:00 PM"), NightClaw back-solves your cap from what it independently
+Wed 3:00 PM"), SleepClaw back-solves your cap from what it independently
 measured over that same window, and from then on it tracks remaining quota,
 burn rate, and time-to-exhaustion continuously — offline, no credentials,
 no undocumented endpoints.
@@ -13,8 +13,8 @@ not raw tokens. Raw totals are dominated by cache reads, which bill at ~0.1x
 input; a raw-token cap would swing wildly with your cache-hit mix. Whatever
 the provider actually meters, the cap is back-solved in the same unit the
 consumption is measured in, so the ratio holds as long as your workload mix
-is roughly stable. Re-calibrate whenever the panel and NightClaw disagree —
-`nightclaw calibrate` is cheap and self-correcting.
+is roughly stable. Re-calibrate whenever the panel and SleepClaw disagree —
+`sleepclaw calibrate` is cheap and self-correcting.
 """
 
 import json
@@ -23,7 +23,7 @@ from pathlib import Path
 
 from . import core, pricing
 
-CALIBRATION = Path.home() / ".config" / "nightclaw" / "calibration.json"
+CALIBRATION = Path.home() / ".config" / "sleepclaw" / "calibration.json"
 
 WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday",
             "friday", "saturday", "sunday"]
@@ -311,7 +311,7 @@ def night_budget_guard(reserve_pct=15.0):
     """
     s = claude_state()
     if not s.get("calibrated"):
-        return True, ("not calibrated — run `nightclaw calibrate` so the night "
+        return True, ("not calibrated — run `sleepclaw calibrate` so the night "
                       "shift can protect your weekly quota")
     tight = [p for p in s["pools"].values() if p["percent_left"] < reserve_pct]
     if tight:

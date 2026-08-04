@@ -1,9 +1,9 @@
-# NightClaw 🌙
+# SleepClaw 🌙
 
 **Stop paying for tokens you never use.**
 
 ```
-  🌙 NightClaw — token utilization, last 7 days
+  🌙 SleepClaw — token utilization, last 7 days
 
   Utilization  ▐█░░░░░░░░░░░░░░░░░░░░░░░░░▌  5.3% (proxy — true value is lower)
   Coverage     ▐██░░░░░░░░░░░░░░░░░░░░░░░░▌  8.9%  (3 of 34 possible 5h windows)
@@ -21,7 +21,7 @@
   Est. API-rate value consumed  $17.45
 ```
 
-## Why I built NightClaw
+## Why I built SleepClaw
 
 An AI subscription is perishable capacity. Every 5-hour window that resets
 with unused quota is inventory that expired on the shelf — and nobody manages
@@ -33,21 +33,21 @@ So I measured mine. The answer was **under 9% window coverage, 0% overnight
 usage** — more than 90% of paid capacity expiring unused, every week. If your
 first baseline doesn't shock you, you're the exception.
 
-NightClaw is the sensor first, and eventually the whole loop: measure the
+SleepClaw is the sensor first, and eventually the whole loop: measure the
 waste, then put the idle hours — mostly the ones you spend asleep — to work.
 
 ## Quick start
 
 ```bash
-pipx install git+https://github.com/PhilbertChristian/nightclaw
-nightclaw
+pipx install git+https://github.com/PhilbertChristian/sleepclaw
+sleepclaw
 ```
 
 Or without installing anything:
 
 ```bash
-git clone https://github.com/PhilbertChristian/nightclaw && cd nightclaw
-python3 -m nightclaw
+git clone https://github.com/PhilbertChristian/sleepclaw && cd sleepclaw
+python3 -m sleepclaw
 ```
 
 No accounts. No API keys. No config. Your first report renders in seconds.
@@ -57,13 +57,13 @@ No accounts. No API keys. No config. Your first report renders in seconds.
 - **Small enough to understand.** A handful of files, zero dependencies,
   stdlib Python. You can read the entire codebase before trusting it with
   anything — and you should.
-- **Local-first, read-only.** NightClaw parses logs your tools already write
+- **Local-first, read-only.** SleepClaw parses logs your tools already write
   and mutates nothing. Exactly one feature reaches the network — `quota`, which
   asks your provider for your own quota using the credential its CLI already
   stored. `--offline` disables even that.
 - **Honest numbers.** Every figure is reconstructable from your own logs, and
   the methodology prints next to the number. Where estimation is required,
-  NightClaw is deliberately conservative: the utilization proxy *overstates*
+  SleepClaw is deliberately conservative: the utilization proxy *overstates*
   utilization, so any improvement you measure against it is understated.
   See [docs/methodology.md](docs/methodology.md).
 - **Measurement before optimization.** The scheduler, the picker, the night
@@ -72,7 +72,7 @@ No accounts. No API keys. No config. Your first report renders in seconds.
 - **Headroom is allocated, not wasted.** The target is never 100% utilization.
   Your interactive morning session deserves a full tank; the metric that goes
   to zero is *waste*, not slack.
-- **Data over dashboards.** `nightclaw json` exists so agents can consume the
+- **Data over dashboards.** `sleepclaw json` exists so agents can consume the
   numbers directly — in the spirit of [AXI](https://axi.md) and
   [quota-axi](https://github.com/kunchenguid/axi): data-only, composable.
 
@@ -82,7 +82,7 @@ No accounts. No API keys. No config. Your first report renders in seconds.
 |---|---|
 | **Window coverage** | How many of the possible 5-hour rate-limit windows you actually used |
 | **Utilization proxy** | Consumption vs. running every window at your own observed peak (a deliberate overstatement — see methodology) |
-| **Idle** | Window slots that expired unused — the waste NightClaw exists to eliminate |
+| **Idle** | Window slots that expired unused — the waste SleepClaw exists to eliminate |
 | **Overnight share** | Usage between 23:00–07:00 local. For most people: ~0%. That's the recoverable capacity |
 | **Dollar value** | What your consumed tokens would cost at first-party API rates (cache writes 1.25×, reads 0.1× input) |
 
@@ -92,28 +92,28 @@ is on the roadmap.
 
 ## What leaves your machine
 
-**One request, to your own provider.** `nightclaw quota` sends your stored
+**One request, to your own provider.** `sleepclaw quota` sends your stored
 Claude credential to `api.anthropic.com/api/oauth/usage` and reads back your
 own quota percentages. That is the entire network surface.
 
 No telemetry, no analytics, no phone-home, no account, and no third party ever
 sees anything. Your logs, prompts, and token counts never leave the machine.
-`nightclaw quota --offline` and every other command are fully offline.
+`sleepclaw quota --offline` and every other command are fully offline.
 
 ## Usage
 
 ```bash
-nightclaw boot                # wake the dog: banner + environment check
-nightclaw                     # visual report, last 7 days
-nightclaw report --days 30    # longer lookback
-nightclaw json                # machine-readable — pipe it to your agent
-nightclaw doctor              # verify NightClaw can find your usage data
+sleepclaw boot                # wake the dog: banner + environment check
+sleepclaw                     # visual report, last 7 days
+sleepclaw report --days 30    # longer lookback
+sleepclaw json                # machine-readable — pipe it to your agent
+sleepclaw doctor              # verify SleepClaw can find your usage data
 ```
 
 ### How much is left? (live quota)
 
 ```bash
-nightclaw quota
+sleepclaw quota
 ```
 
 ```
@@ -124,26 +124,26 @@ nightclaw quota
     54% used · resets in 40h
 ```
 
-**These are your provider's own numbers, not an estimate.** NightClaw reads
+**These are your provider's own numbers, not an estimate.** SleepClaw reads
 the OAuth credential the Claude CLI already stores on your machine (macOS
 Keychain, or `~/.claude/.credentials.json`) and asks Anthropic's own usage
 endpoint — the same data behind `/usage`. Nothing is inferred.
 
-This is the **only** part of NightClaw that touches the network, and it only
+This is the **only** part of SleepClaw that touches the network, and it only
 ever talks to `api.anthropic.com`, with your own credential, about your own
 account. The token is read in one module, never printed, never logged, never
-written anywhere. Skip it entirely with `nightclaw quota --offline`.
+written anywhere. Skip it entirely with `sleepclaw quota --offline`.
 
 <details>
 <summary>Offline fallback: calibration</summary>
 
-Without a credential, NightClaw can still estimate remaining quota. You read
+Without a credential, SleepClaw can still estimate remaining quota. You read
 your panel's percentages once and it back-solves your capacity from
 consumption it measured independently over the same window:
 
 ```bash
-nightclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"
-nightclaw quota --offline
+sleepclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"
+sleepclaw quota --offline
 ```
 
 Other providers have no local telemetry at all, so they're transcribed
@@ -151,22 +151,22 @@ readings — stored with a timestamp and always shown with their age, so a
 stale number can never pass for a live one:
 
 ```bash
-nightclaw calibrate --provider codex --used 66 --resets "Fri 9:00 AM" --plan PRO
+sleepclaw calibrate --provider codex --used 66 --resets "Fri 9:00 AM" --plan PRO
 ```
 </details>
 
 ### Just talk to it
 
-In the NanoClaw spirit — no monitoring dashboard, ask the agent — NightClaw
+In the NanoClaw spirit — no monitoring dashboard, ask the agent — SleepClaw
 ships a conversation layer over the data:
 
 ```bash
-nightclaw ask "how's my utilization this month?"
-nightclaw chat        # full interactive session
+sleepclaw ask "how's my utilization this month?"
+sleepclaw chat        # full interactive session
 ```
 
 `ask` launches a headless Claude Code session that is pre-approved to run
-**only** `nightclaw` commands — it answers from real sensor runs and can't
+**only** `sleepclaw` commands — it answers from real sensor runs and can't
 touch anything else without asking. `chat` is a full interactive session
 where normal permission prompts apply, so you can also manage your backlog
 conversationally ("queue up test-writing for the api repo tonight").
@@ -175,14 +175,14 @@ Requires the `claude` CLI.
 ### The night shift
 
 ```bash
-nightclaw backlog                 # your overnight task list (~/.config/nightclaw/backlog.md)
-nightclaw goodnight --dry-run     # validate the plan: repos, budget, timeouts
-nightclaw goodnight               # run it — confirmation required
-nightclaw morning                 # digest: what ran, what it cost, how it exited
+sleepclaw backlog                 # your overnight task list (~/.config/sleepclaw/backlog.md)
+sleepclaw goodnight --dry-run     # validate the plan: repos, budget, timeouts
+sleepclaw goodnight               # run it — confirmation required
+sleepclaw morning                 # digest: what ran, what it cost, how it exited
 ```
 
 Tasks are one line each — `- [ ] repo: task description` — and only repos you
-name in `~/.config/nightclaw/night.json`'s allowlist can be touched. The
+name in `~/.config/sleepclaw/night.json`'s allowlist can be touched. The
 night stops when the token budget is spent; every run is journaled.
 
 **The safety model is opt-in by design.** There is *no default* permission
@@ -198,12 +198,12 @@ night.
 Feed it to an agent:
 
 ```bash
-nightclaw json | claude -p "Where am I wasting the most quota, and what
+sleepclaw json | claude -p "Where am I wasting the most quota, and what
   should I schedule overnight to use it?"
 ```
 
 Override pricing (e.g. introductory rates, partner pricing) in
-`~/.config/nightclaw/pricing.json`:
+`~/.config/sleepclaw/pricing.json`:
 
 ```json
 { "claude-sonnet-5": { "input": 2.0, "output": 10.0 } }
@@ -211,7 +211,7 @@ Override pricing (e.g. introductory rates, partner pricing) in
 
 ## Customizing
 
-NightClaw has exactly one config file (the pricing override above) and no
+SleepClaw has exactly one config file (the pricing override above) and no
 plans for more. Want different behavior — another night-hours definition, a
 different report layout, a new metric? **Fork it and change the code.** The
 codebase is small enough that Claude Code can make any change you can
@@ -254,11 +254,11 @@ local JSONL logs ──▶ sensor (core.py) ──▶ report dict ──▶ rend
 
 Key files:
 
-- `nightclaw/core.py` — log discovery, event parsing/dedup, 5h window
+- `sleepclaw/core.py` — log discovery, event parsing/dedup, 5h window
   reconstruction, metric assembly. The only file with real logic.
-- `nightclaw/pricing.py` — API-rate table + dollar estimation, override hook.
-- `nightclaw/render.py` — ANSI report and heatmap. No logic, just presentation.
-- `nightclaw/cli.py` — argument handling. Bare `nightclaw` shows live data,
+- `sleepclaw/pricing.py` — API-rate table + dollar estimation, override hook.
+- `sleepclaw/render.py` — ANSI report and heatmap. No logic, just presentation.
+- `sleepclaw/cli.py` — argument handling. Bare `sleepclaw` shows live data,
   never help text.
 
 ## Contributing
@@ -285,7 +285,7 @@ by message + request ID. It's a reconstruction, not the provider's ledger —
 which is why every derived number is labeled and biased conservative.
 
 **Why does the utilization proxy "overstate"? Isn't that backwards?**
-The true limit of a window isn't published, so NightClaw uses your own
+The true limit of a window isn't published, so SleepClaw uses your own
 observed peak window as the denominator's stand-in. Your real entitlement is
 at least that big — probably bigger — so real utilization is *lower* than
 the proxy. Improvements measured against it are therefore understated, never
@@ -298,12 +298,12 @@ rates, so it's not naively inflated either.
 
 **Is it safe to run?**
 Read the code — it's small enough that you actually can. It opens local files
-read-only and prints. `nightclaw doctor` shows exactly which directories it
+read-only and prints. `sleepclaw doctor` shows exactly which directories it
 looks at.
 
 **How do I uninstall?**
-`pipx uninstall nightclaw`. It leaves nothing behind except
-`~/.config/nightclaw/pricing.json` if you created one.
+`pipx uninstall sleepclaw`. It leaves nothing behind except
+`~/.config/sleepclaw/pricing.json` if you created one.
 
 ## License
 

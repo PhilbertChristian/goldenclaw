@@ -1,4 +1,4 @@
-"""NightClaw sensor core — parse local Claude Code logs into utilization metrics.
+"""SleepClaw sensor core — parse local Claude Code logs into utilization metrics.
 
 Everything here is local-first and read-only: no network calls, no telemetry.
 Windows are reconstructed with the same heuristics the community monitors use
@@ -193,7 +193,7 @@ def assemble(days=7, now=None):
 
 
 def doctor():
-    """Environment check: where the data is and whether NightClaw can see it."""
+    """Environment check: where the data is and whether SleepClaw can see it."""
     dirs = find_log_dirs()
     checks = {"log_dirs": [str(d) for d in dirs], "files": 0, "events_sampled": 0}
     for d in dirs:

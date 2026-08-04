@@ -19,7 +19,7 @@ Credential handling rules, and they are not negotiable:
   - a rejected token (401/403) falls through to the next candidate rather than
     declaring you signed out
 
-This is the one part of NightClaw that touches the network, and it only ever
+This is the one part of SleepClaw that touches the network, and it only ever
 talks to api.anthropic.com with your own credential about your own account.
 Everything else stays offline.
 """

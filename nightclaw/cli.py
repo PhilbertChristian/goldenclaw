@@ -24,6 +24,7 @@ def main(argv=None):
     p_json.add_argument("--days", type=int, default=7, help="lookback period (default 7)")
 
     sub.add_parser("doctor", help="verify NightClaw can find your usage data")
+    sub.add_parser("boot", help="wake the dog — banner and environment check")
 
     p_quota = sub.add_parser("quota", help="live quota: how much is left, when it resets")
     p_quota.add_argument("--json", action="store_true", dest="as_json",
@@ -71,6 +72,11 @@ def main(argv=None):
     if not argv:
         argv = ["report"]
     args = parser.parse_args(argv)
+
+    if args.cmd == "boot":
+        from . import boot
+        boot.sequence()
+        return 0
 
     if args.cmd == "doctor":
         d = core.doctor()
@@ -142,7 +148,8 @@ def main(argv=None):
         return 0
 
     if args.cmd == "goodnight":
-        from . import night
+        from . import boot, night
+        boot.banner()
         cfg = night.load_config()
         return night.run_night(
             cfg, budget_override=args.budget, dry_run=args.dry_run,
@@ -150,7 +157,8 @@ def main(argv=None):
         )
 
     if args.cmd == "morning":
-        from . import night
+        from . import boot, night
+        boot.banner(waking=True)
         journal_path, entries = night.latest_journal()
         if journal_path is None:
             print("No nights on record yet. Run `nightclaw goodnight` first.", file=sys.stderr)

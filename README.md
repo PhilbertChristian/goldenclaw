@@ -103,6 +103,7 @@ sees anything. Your logs, prompts, and token counts never leave the machine.
 ## Usage
 
 ```bash
+nightclaw boot                # wake the dog: banner + environment check
 nightclaw                     # visual report, last 7 days
 nightclaw report --days 30    # longer lookback
 nightclaw json                # machine-readable — pipe it to your agent

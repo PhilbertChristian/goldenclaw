@@ -43,7 +43,7 @@ def wake_animation(stream=None, delay=0.55):
     """Max wakes up: sleeping -> stirring -> stretching, redrawn in place.
     Non-TTY streams get only the final frame (no cursor tricks in pipes)."""
     stream = stream or sys.stdout
-    frames = [(DOG_SLEEPING, CYAN), (DOG_SITTING, YELLOW)]
+    frames = [(DOG_SLEEPING, YELLOW), (DOG_SITTING, YELLOW)]
     if not stream.isatty():
         for row in DOG_SITTING.strip("\n").split("\n"):
             stream.write("  " + row + "\n")
@@ -100,7 +100,7 @@ def sequence(stream=None, delay=0.06):
     stream = stream or sys.stdout
     _line("", delay, stream)
     for row in DOG_SLEEPING.strip("\n").split("\n"):
-        _line(c("  " + row, CYAN), delay * 0.5, stream)
+        _line(c("  " + row, YELLOW), delay * 0.5, stream)
     _line("", delay, stream)
     _line("  " + c("G O L D E N C L A W", BOLD, MAGENTA)
           + c("   your subscription works the night shift", DIM), delay, stream)
@@ -122,7 +122,7 @@ def banner(waking=False, stream=None):
     stream = stream or sys.stdout
     art = DOG_WAKING if waking else DOG_SLEEPING
     for row in art.strip("\n").split("\n"):
-        stream.write(c("  " + row, YELLOW if waking else CYAN) + "\n")
+        stream.write(c("  " + row, YELLOW) + "\n")
     stream.write("\n")
     stream.flush()
 

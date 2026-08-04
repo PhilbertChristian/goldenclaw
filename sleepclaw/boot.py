@@ -32,8 +32,12 @@ DOG_WAKING = r"""
 
 def _line(text, delay=0.06, stream=None):
     stream = stream or sys.stdout
-    stream.write(text + "\n")
-    stream.flush()
+    try:
+        stream.write(text + "\n")
+        stream.flush()
+    except BrokenPipeError:
+        # `sleepclaw boot | head` closes the pipe early; that is not an error.
+        raise SystemExit(0)
     if delay and stream.isatty():
         time.sleep(delay)
 

@@ -145,7 +145,7 @@ def _max_quip(verdict, session_left):
     return "right on pace. good human. 🐾"
 
 
-def wakeup(stream=None):
+def wakeup(stream=None, skip_sleep_frame=False):
     """The front door: wake Max, he tells you what's left. Fast, free, fun.
 
     No agent session is launched — checking your quota must never spend your
@@ -157,7 +157,12 @@ def wakeup(stream=None):
     from . import core, forecast
 
     stream = stream or sys.stdout
-    wake_animation(stream)
+    if skip_sleep_frame:
+        for row in DOG_SITTING.strip("\n").split("\n"):
+            _line(c("  " + row, YELLOW), 0.02, stream)
+        _line("", 0, stream)
+    else:
+        wake_animation(stream)
     _line("  " + c("Max is up.", BOLD, YELLOW) + c("  🐾  GoldenClaw", DIM), 0.05, stream)
     _line("", 0, stream)
 
@@ -222,3 +227,29 @@ def wakeup(stream=None):
     _line(c("  more: `max` talk to him · `tokens` history · `goodnight` night shift", DIM), 0, stream)
     _line("", 0, stream)
     return 0
+
+
+def sleep_loop(stream=None):
+    """Bare `goldenclaw`: Max sleeps in the terminal and WAITS. Typing
+    `wakeup` (or `wake`) wakes him right there — one contained session, no
+    bouncing back to the shell. Non-TTY prints the sleeping dog and exits,
+    so pipes and scripts stay sane."""
+    stream = stream or sys.stdout
+    banner(stream=stream)
+    if not (stream.isatty() and sys.stdin.isatty()):
+        return 0
+    while True:
+        try:
+            cmd = input(c("  > ", CYAN)).strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            stream.write("\n" + c("  ( Max sleeps on )", DIM) + "\n\n")
+            return 0
+        if cmd in ("wakeup", "wake", "wake up", "w"):
+            stream.write("\n")
+            return wakeup(stream=stream, skip_sleep_frame=True)
+        if cmd in ("exit", "quit", "q"):
+            stream.write(c("  ( Max sleeps on )", DIM) + "\n\n")
+            return 0
+        if not cmd:
+            continue
+        stream.write(c("  ( Max twitches an ear — try `wakeup` )", DIM) + "\n")

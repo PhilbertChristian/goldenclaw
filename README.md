@@ -51,11 +51,15 @@ goldenclaw
            ( Max is sleeping )
 ```
 
-That's it — that's the whole command. Max is asleep. Wake him:
+Max is asleep, and he waits right there. Type `wakeup`:
 
-```bash
-goldenclaw wakeup
 ```
+  > wakeup
+```
+
+He wakes in place — animation, your live tank, his verdict, and the week per
+model. One contained session; you never bounce back to the shell to wake him.
+(`goldenclaw wakeup` also works directly, and `exit` lets him sleep on.)
 
 Max wakes up, checks the tank, and tells you what's left — with an opinion:
 

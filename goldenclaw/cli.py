@@ -73,8 +73,7 @@ def main(argv=None):
     # (`wakeup`) is what fetches the data. The report lives at `report`.
     if not argv:
         from . import boot
-        boot.banner()
-        return 0
+        return boot.sleep_loop() or 0
     args = parser.parse_args(argv)
 
     if args.cmd == "boot":

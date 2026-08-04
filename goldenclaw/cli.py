@@ -1,4 +1,4 @@
-"""SleepClaw CLI — boots from the terminal, shows live data by default."""
+"""GoldenClaw CLI — boots from the terminal, shows live data by default."""
 
 import argparse
 import json
@@ -11,10 +11,10 @@ def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
 
     parser = argparse.ArgumentParser(
-        prog="sleepclaw",
+        prog="goldenclaw",
         description="Measure your AI subscription token utilization from local logs.",
     )
-    parser.add_argument("--version", action="version", version="sleepclaw " + __version__)
+    parser.add_argument("--version", action="version", version="goldenclaw " + __version__)
     sub = parser.add_subparsers(dest="cmd")
 
     p_report = sub.add_parser("report", help="visual utilization report (default)")
@@ -23,7 +23,7 @@ def main(argv=None):
     p_json = sub.add_parser("json", help="machine-readable report")
     p_json.add_argument("--days", type=int, default=7, help="lookback period (default 7)")
 
-    sub.add_parser("doctor", help="verify SleepClaw can find your usage data")
+    sub.add_parser("doctor", help="verify GoldenClaw can find your usage data")
     sub.add_parser("boot", help="wake the dog — banner and environment check")
 
     p_quota = sub.add_parser("quota", help="live quota: how much is left, when it resets")
@@ -34,7 +34,7 @@ def main(argv=None):
 
     p_cal = sub.add_parser(
         "calibrate",
-        help="teach SleepClaw your entitlement from the provider's usage panel")
+        help="teach GoldenClaw your entitlement from the provider's usage panel")
     p_cal.add_argument("--weekly", type=float, default=None,
                        help="percent used, all-models weekly pool (e.g. 49)")
     p_cal.add_argument("--fable", type=float, default=None,
@@ -61,11 +61,11 @@ def main(argv=None):
     sub.add_parser("morning", help="digest of what ran last night")
     sub.add_parser("backlog", help="show the overnight task backlog")
 
-    p_ask = sub.add_parser("ask", help="ask the SleepClaw agent a question (one-shot)")
+    p_ask = sub.add_parser("ask", help="ask the GoldenClaw agent a question (one-shot)")
     p_ask.add_argument("question", nargs="+", help="your question, plain English")
     p_ask.add_argument("--model", default=None, help="model override for the agent")
 
-    p_chat = sub.add_parser("chat", help="talk to the SleepClaw agent interactively")
+    p_chat = sub.add_parser("chat", help="talk to the GoldenClaw agent interactively")
     p_chat.add_argument("--model", default=None, help="model override for the agent")
 
     # AXI principle: no arguments shows live data, not help text.
@@ -105,7 +105,7 @@ def main(argv=None):
                 return 1
             if args.used is None or not args.resets:
                 print("Transcribed providers need --used and --resets, e.g.\n"
-                      '  sleepclaw calibrate --provider codex --used 66 '
+                      '  goldenclaw calibrate --provider codex --used 66 '
                       '--resets "Fri 9:00 AM" --plan PRO',
                       file=sys.stderr)
                 return 1
@@ -118,7 +118,7 @@ def main(argv=None):
             print("\n  ✓ Recorded {} at {:.0f}% used.".format(
                 providers.label(args.provider), args.used))
             print("    This is a transcribed reading, not a measurement — "
-                  "SleepClaw will\n    show its age so it can't pass for live data.\n")
+                  "GoldenClaw will\n    show its age so it can't pass for live data.\n")
             return 0
 
         pools = {k: v for k, v in (("weekly", args.weekly), ("fable", args.fable),
@@ -126,7 +126,7 @@ def main(argv=None):
         if not pools or not args.resets:
             print(
                 "Open Claude Code's usage panel (/usage), then pass what it shows:\n"
-                '  sleepclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"\n'
+                '  goldenclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"\n'
                 "\nAt least one pool percentage and --resets are required.",
                 file=sys.stderr)
             return 1
@@ -144,7 +144,7 @@ def main(argv=None):
             else:
                 print("    {:<8} no measured usage in this window — cannot "
                       "back-solve a cap yet".format(name))
-        print("\n  Run `sleepclaw quota` to see what's left.\n")
+        print("\n  Run `goldenclaw quota` to see what's left.\n")
         return 0
 
     if args.cmd == "goodnight":
@@ -160,7 +160,7 @@ def main(argv=None):
         boot.banner(waking=True)
         journal_path, entries = night.latest_journal()
         if journal_path is None:
-            print("Max hasn't worked a night yet. Run `sleepclaw goodnight` before bed.",
+            print("Max hasn't worked a night yet. Run `goldenclaw goodnight` before bed.",
                   file=sys.stderr)
             return 1
         print(render.render_morning(journal_path, entries, core.assemble(days=7)))
@@ -194,7 +194,7 @@ def main(argv=None):
     if report is None:
         print(
             "No usage data found in the last {} days.\n"
-            "Run `sleepclaw doctor` to check data sources.".format(
+            "Run `goldenclaw doctor` to check data sources.".format(
                 getattr(args, "days", 7)
             ),
             file=sys.stderr,

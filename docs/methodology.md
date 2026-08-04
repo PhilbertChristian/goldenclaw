@@ -1,6 +1,6 @@
 # Methodology
 
-Every number SleepClaw prints must be reconstructable from your local logs by
+Every number GoldenClaw prints must be reconstructable from your local logs by
 an independent reader. This document is the spec for that reconstruction, and
 the honest accounting of where estimation enters and which direction it errs.
 
@@ -22,7 +22,7 @@ token counters, and a `message.model`.
 
 Anthropic subscription rate limits operate on rolling 5-hour windows: a
 window opens with your first message and closes exactly 5 hours later.
-SleepClaw reconstructs them from the event stream:
+GoldenClaw reconstructs them from the event stream:
 
 1. Sort events by timestamp.
 2. The first event opens a window whose start is that timestamp **floored to
@@ -50,7 +50,7 @@ Let `days` be the lookback period, `slots = days × 24 / 5` the number of
 ### Why the proxy overstates — and why that's the right direction
 
 True utilization is `consumed / entitlement`, but the entitlement (tokens per
-window) is not published. SleepClaw substitutes your own observed `peak`
+window) is not published. GoldenClaw substitutes your own observed `peak`
 window. Since the provider allowed that consumption, the real per-window
 limit is **at least** `peak` — so the substituted denominator is a lower
 bound, and the resulting percentage is an **upper** bound on true
@@ -58,7 +58,7 @@ utilization.
 
 The consequence: when you later claim "utilization went from X% to Y%," both
 numbers were computed against the same conservative yardstick, and your true
-improvement is at least as large as claimed. SleepClaw never publishes a
+improvement is at least as large as claimed. GoldenClaw never publishes a
 number that flatters it.
 
 (Weekly caps, which also exist, would make real capacity *smaller* than
@@ -72,18 +72,18 @@ API rates?* It is a value-delivered measure, not a reconstruction of your
 bill.
 
 - Rates: Anthropic first-party API prices per million tokens, prefix-matched
-  by model ID (`sleepclaw/pricing.py`).
+  by model ID (`goldenclaw/pricing.py`).
 - Cache writes bill at **1.25×** input rate, cache reads at **0.1×** — so a
   cache-heavy session is not naively inflated.
 - Unknown models are listed as unpriced rather than guessed.
-- Overrides: `~/.config/sleepclaw/pricing.json` takes precedence, for
+- Overrides: `~/.config/goldenclaw/pricing.json` takes precedence, for
   introductory or partner pricing.
 
 ## The publishing rule
 
-Anything published from SleepClaw output follows three rules:
+Anything published from GoldenClaw output follows three rules:
 
-1. The number comes from a real run on real logs (`sleepclaw json` output is
+1. The number comes from a real run on real logs (`goldenclaw json` output is
    the receipt).
 2. The methodology (this document) is linked next to the claim.
 3. Estimates are biased against the claim, never toward it.
@@ -100,8 +100,8 @@ answer it: they record consumption, not entitlement.
 Calibration joins the two sources without credentials or scraping:
 
 1. You read the provider's usage panel once and enter what it says:
-   `sleepclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"`.
-2. SleepClaw independently measures your consumption over that same weekly
+   `goldenclaw calibrate --weekly 49 --fable 85 --resets "Wed 3:00 PM"`.
+2. GoldenClaw independently measures your consumption over that same weekly
    window from local logs, in cost-weighted units.
 3. It back-solves capacity: `cap = measured_consumption / (percent_used/100)`.
 4. From then on, remaining quota, burn rate, runway, and projected
@@ -119,14 +119,14 @@ The unit choice is also self-correcting by construction: the cap is
 back-solved in the *same* unit the consumption is measured in, so the ratio
 holds regardless of whether the provider's internal accounting matches ours
 exactly — as long as your workload mix is roughly stable between
-calibrations. When it isn't, the panel and SleepClaw will disagree, and
+calibrations. When it isn't, the panel and GoldenClaw will disagree, and
 re-calibrating fixes it in one command.
 
 ### Known limits
 
 - Accuracy depends on the panel reading being current. Take it and run
   `calibrate` in the same minute.
-- Multi-machine usage splits the logs; SleepClaw only sees the machine it
+- Multi-machine usage splits the logs; GoldenClaw only sees the machine it
   runs on, so it will under-measure consumption and over-estimate the cap.
 - A calibration older than its weekly window is flagged stale rather than
   silently trusted.
@@ -145,7 +145,7 @@ the Claude CLI authenticates against an endpoint that reports it directly.
 
 The response is a flat object keyed by window (`five_hour`, `seven_day`,
 `seven_day_opus`, `seven_day_sonnet`, `extra_usage`), each carrying
-`utilization` (percent **used**) and `resets_at`. So `sleepclaw quota` reports
+`utilization` (percent **used**) and `resets_at`. So `goldenclaw quota` reports
 ground truth with no estimation at all, and the proxy and calibration become
 the offline fallback rather than the primary answer.
 

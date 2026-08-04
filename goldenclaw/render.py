@@ -1,6 +1,6 @@
-"""ANSI terminal rendering for SleepClaw reports.
+"""ANSI terminal rendering for GoldenClaw reports.
 
-AXI-flavored: running `sleepclaw` with no arguments shows live data, and every
+AXI-flavored: running `goldenclaw` with no arguments shows live data, and every
 report ends with concrete next steps. Colors respect NO_COLOR and non-TTYs.
 """
 
@@ -71,7 +71,7 @@ def render_report(r):
     lines = []
     p = lines.append
     p("")
-    p(c("  🌙 SleepClaw", BOLD, MAGENTA) + c(f" — token utilization, last {r['period_days']} days", DIM))
+    p(c("  🌙 GoldenClaw", BOLD, MAGENTA) + c(f" — token utilization, last {r['period_days']} days", DIM))
     p("")
 
     w = r["windows"]
@@ -113,15 +113,15 @@ def render_report(r):
     p("")
 
     p(c("  Next steps", BOLD))
-    p(c("    sleepclaw report --days 30     longer lookback", DIM))
-    p(c("    sleepclaw json                 machine-readable (pipe to your agent)", DIM))
-    p(c("    sleepclaw doctor               verify data sources", DIM))
+    p(c("    goldenclaw report --days 30     longer lookback", DIM))
+    p(c("    goldenclaw json                 machine-readable (pipe to your agent)", DIM))
+    p(c("    goldenclaw doctor               verify data sources", DIM))
     p("")
     return "\n".join(lines)
 
 
 def render_doctor(d):
-    lines = ["", c("  🌙 SleepClaw doctor", BOLD, MAGENTA), ""]
+    lines = ["", c("  🌙 GoldenClaw doctor", BOLD, MAGENTA), ""]
     if not d["log_dirs"]:
         lines.append(c("  ✗ No Claude Code log directories found.", YELLOW))
         lines.append(c("    Checked ~/.config/claude/projects and ~/.claude/projects.", DIM))
@@ -134,14 +134,14 @@ def render_doctor(d):
         lines.append(f"  {c('✓' if d['events_sampled'] else '✗', GREEN if d['events_sampled'] else YELLOW)} "
                      f"usage events readable: {d['events_sampled']}{'+' if d['events_sampled'] >= 500 else ''}")
     lines.append("")
-    verdict = "ready — run `sleepclaw` for your report" if d["ok"] else "not ready — see above"
+    verdict = "ready — run `goldenclaw` for your report" if d["ok"] else "not ready — see above"
     lines.append("  " + (c(verdict, BOLD, GREEN) if d["ok"] else c(verdict, BOLD, YELLOW)))
     lines.append("")
     return "\n".join(lines)
 
 
 def render_morning(journal_path, entries, report=None):
-    lines = ["", c("  🌅 SleepClaw morning report", BOLD, YELLOW)
+    lines = ["", c("  🌅 GoldenClaw morning report", BOLD, YELLOW)
              + c("  — " + journal_path.stem, DIM), ""]
     tasks = [e for e in entries if e.get("type") == "task"]
     stopped = any(e.get("type") == "budget_stop" for e in entries)
@@ -232,7 +232,7 @@ def _live_lines(live):
 
 
 def render_quota(s):
-    lines = ["", c("  🌙 SleepClaw", BOLD, MAGENTA) + c("  — live quota", DIM), ""]
+    lines = ["", c("  🌙 GoldenClaw", BOLD, MAGENTA) + c("  — live quota", DIM), ""]
     provs = s.get("providers", {})
     claude = provs.get("claude", {})
     live = s.get("live")
@@ -287,8 +287,8 @@ def render_quota(s):
         lines.append(c("  credential the Claude CLI already stores. Nothing is estimated.", DIM))
     lines.append("")
     lines.append(c("  Next steps", BOLD))
-    lines.append(c("    sleepclaw            historical utilization & waste", DIM))
-    lines.append(c("    sleepclaw quota --offline    skip the network call", DIM))
+    lines.append(c("    goldenclaw            historical utilization & waste", DIM))
+    lines.append(c("    goldenclaw quota --offline    skip the network call", DIM))
     lines.append(c("    claw how much is left        ask in plain English", DIM))
     lines.append("")
     return "\n".join(lines)

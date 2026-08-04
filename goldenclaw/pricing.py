@@ -4,7 +4,7 @@ Rates are USD per million tokens at Anthropic first-party API prices
 (input, output). Cache writes bill at 1.25x input, cache reads at 0.1x.
 Prefix-matched, first match wins — keep more specific prefixes first.
 
-Override with ~/.config/sleepclaw/pricing.json:
+Override with ~/.config/goldenclaw/pricing.json:
   {"claude-sonnet-5": {"input": 2.0, "output": 10.0}}
 """
 
@@ -25,7 +25,7 @@ DEFAULT_PRICES = [
 CACHE_WRITE_MULT = 1.25
 CACHE_READ_MULT = 0.10
 
-_OVERRIDE_PATH = Path.home() / ".config" / "sleepclaw" / "pricing.json"
+_OVERRIDE_PATH = Path.home() / ".config" / "goldenclaw" / "pricing.json"
 
 
 def _price_table():

@@ -1,6 +1,6 @@
 import unittest
 
-from sleepclaw import live
+from goldenclaw import live
 
 
 class NormalizeTest(unittest.TestCase):

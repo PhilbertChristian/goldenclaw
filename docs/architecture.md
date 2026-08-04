@@ -1,4 +1,4 @@
-# SleepClaw — Architecture & Design
+# GoldenClaw — Architecture & Design
 
 > Phase 1 (the sensor) is built — see the repo root. This document is the
 > design for the full closed loop. Metric definitions live in
@@ -9,7 +9,7 @@
 LLM subscriptions are pre-paid, perishable capacity with opaque limits and
 rolling reset semantics. Nobody manages them like capacity. Monitors exist
 (ccusage, Claude-Code-Usage-Monitor, quota-axi, SessionWatcher) but they are
-all read-only. SleepClaw closes the loop: **telemetry → forecast → schedule
+all read-only. GoldenClaw closes the loop: **telemetry → forecast → schedule
 → policy-governed execution → report**. The North-Star metric is token
 utilization; the primary objective is driving *waste* (expired unused
 quota) toward zero without touching reserved interactive headroom.
@@ -18,7 +18,7 @@ quota) toward zero without touching reserved interactive headroom.
 
 ```
                 ┌─────────────────────────────────────────────┐
-                │              SleepClaw core                  │
+                │              GoldenClaw core                  │
   local JSONL ─▶│ sensor ─▶ capacity ledger ─▶ scheduler       │─▶ NanoClaw agents
   quota-axi ───▶│              ▲                  │            │   (containers)
                 │            picker ◀── eval scores │           │
@@ -96,7 +96,7 @@ avoided, quota state and tank level, PRs awaiting review, guardrail fires.
 ## Content plan (honest-numbers rule)
 
 1. Baseline post: methodology + real measured numbers from own logs.
-2. Before/after post: only after SleepClaw has actually run for a week,
+2. Before/after post: only after GoldenClaw has actually run for a week,
    with reproducible receipts (`baseline.py --json` output committed).
 3. User results: only real beta users, with permission.
 

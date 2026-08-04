@@ -1,38 +1,38 @@
-# SleepClaw — agent guide
+# GoldenClaw — agent guide
 
-SleepClaw is a zero-dependency, stdlib-only Python package (3.9+) that
+GoldenClaw is a zero-dependency, stdlib-only Python package (3.9+) that
 measures AI subscription token utilization from local logs. Fork-and-modify
 is the intended customization model — this file orients you.
 
 ## Layout
 
-- `sleepclaw/core.py` — all real logic: log discovery (`find_log_dirs`),
+- `goldenclaw/core.py` — all real logic: log discovery (`find_log_dirs`),
   event parsing + dedup (`iter_events`), 5h window reconstruction
   (`build_windows`), metric assembly (`assemble`), env check (`doctor`).
-- `sleepclaw/pricing.py` — API-rate table (prefix-matched, first match wins;
+- `goldenclaw/pricing.py` — API-rate table (prefix-matched, first match wins;
   keep specific prefixes before general ones) + `estimate_cost`. User
-  override: `~/.config/sleepclaw/pricing.json`.
-- `sleepclaw/render.py` — ANSI presentation only, no logic. Respects
-  `NO_COLOR` and non-TTY. Bare `sleepclaw` must show live data, never help.
-- `sleepclaw/cli.py` — argparse; subcommands `report` (default), `json`,
+  override: `~/.config/goldenclaw/pricing.json`.
+- `goldenclaw/render.py` — ANSI presentation only, no logic. Respects
+  `NO_COLOR` and non-TTY. Bare `goldenclaw` must show live data, never help.
+- `goldenclaw/cli.py` — argparse; subcommands `report` (default), `json`,
   `doctor`, `boot`, `quota`, `calibrate`, `goodnight`, `morning`, `backlog`,
   `ask`, `chat`, `menubar`.
-- `sleepclaw/night.py` — the night shift: backlog parsing, repo allowlist,
+- `goldenclaw/night.py` — the night shift: backlog parsing, repo allowlist,
   budget-capped headless `claude -p` runs, per-night JSONL journal.
-- `sleepclaw/live.py` — the only networked module: resolves the local OAuth
+- `goldenclaw/live.py` — the only networked module: resolves the local OAuth
   credential (Keychain first on macOS) and reads Anthropic's usage endpoint.
-- `sleepclaw/quota.py` / `providers.py` — remaining-quota state, offline
+- `goldenclaw/quota.py` / `providers.py` — remaining-quota state, offline
   calibration fallback, and transcribed non-Claude readings.
-- `sleepclaw/boot.py` — the sleepy-puppy boot sequence. Its status lines are
+- `goldenclaw/boot.py` — the sleepy-puppy boot sequence. Its status lines are
   real environment checks, not decoration; keep them honest.
-- `sleepclaw/forecast.py` — Max's brain: WASTE/PACE/SHORTFALL verdicts from a
+- `goldenclaw/forecast.py` — Max's brain: WASTE/PACE/SHORTFALL verdicts from a
   straight-line pace projection (basis always stated), and task-cost estimates
   from real past journals only — no history, no estimate.
-- `sleepclaw/ritual.py` — the 9pm goodnight experience: wake animation, day
+- `goldenclaw/ritual.py` — the 9pm goodnight experience: wake animation, day
   review, live budget, verdict, task collection, budget ask, then the guarded
   runner. Non-TTY falls back to the plain backlog flow.
-- `sleepclaw/agent.py` — the conversation layer: `ask` (headless, allowed
-  tools locked to `Bash(sleepclaw:*)`) and `chat` (interactive) over the
+- `goldenclaw/agent.py` — the conversation layer: `ask` (headless, allowed
+  tools locked to `Bash(goldenclaw:*)`) and `chat` (interactive) over the
   Claude Code CLI. The agent must never invent numbers — the system prompt
   enforces run-the-sensor-first; keep it that way.
 
@@ -49,7 +49,7 @@ is the intended customization model — this file orients you.
 4. **Conservative estimation**: any new derived metric must state its bias
    and err *against* the flattering direction. Update
    `docs/methodology.md` in the same change.
-5. `sleepclaw json` output is a stable-ish interface (agents consume it) —
+5. `goldenclaw json` output is a stable-ish interface (agents consume it) —
    add keys freely, rename/remove reluctantly.
 6. **The night runner's permission model is opt-in only.** Never give
    `permission_mode` a default, never accept `bypassPermissions`, never
@@ -68,7 +68,7 @@ doesn't report). Add its rates to `pricing.py`, wire it into `assemble` and
 
 ```bash
 python3 -m unittest discover tests
-python3 -m sleepclaw doctor
-python3 -m sleepclaw
-python3 -m sleepclaw json | python3 -m json.tool > /dev/null
+python3 -m goldenclaw doctor
+python3 -m goldenclaw
+python3 -m goldenclaw json | python3 -m json.tool > /dev/null
 ```

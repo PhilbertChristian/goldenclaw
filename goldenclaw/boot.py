@@ -71,7 +71,7 @@ def _line(text, delay=0.06, stream=None):
         stream.write(text + "\n")
         stream.flush()
     except BrokenPipeError:
-        # `sleepclaw boot | head` closes the pipe early; that is not an error.
+        # `goldenclaw boot | head` closes the pipe early; that is not an error.
         raise SystemExit(0)
     if delay and stream.isatty():
         time.sleep(delay)
@@ -103,7 +103,7 @@ def sequence(stream=None, delay=0.06):
     for row in DOG_SLEEPING.strip("\n").split("\n"):
         _line(c("  " + row, CYAN), delay * 0.5, stream)
     _line("", delay, stream)
-    _line("  " + c("S L E E P C L A W", BOLD, MAGENTA)
+    _line("  " + c("G O L D E N C L A W", BOLD, MAGENTA)
           + c("   your subscription works the night shift", DIM), delay, stream)
     _line("", delay, stream)
 
@@ -112,8 +112,8 @@ def sequence(stream=None, delay=0.06):
         _line("  {} {:<12} {}".format(mark, label, c(detail, DIM)), delay, stream)
 
     _line("", delay, stream)
-    _line(c("  sleepclaw quota    what's left right now (live)", DIM), delay, stream)
-    _line(c("  sleepclaw          where it went, and what expired unused", DIM), delay, stream)
+    _line(c("  goldenclaw quota    what's left right now (live)", DIM), delay, stream)
+    _line(c("  goldenclaw          where it went, and what expired unused", DIM), delay, stream)
     _line(c("  goodnight          put the idle hours to work", DIM), delay, stream)
     _line("", 0, stream)
 

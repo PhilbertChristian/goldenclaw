@@ -7,14 +7,14 @@ Grok, Kimi and friends write nothing usable, or aren't installed. So
 anyone can do honestly — which is why quota tooling in this space tracks
 *percentages* rather than tokens.
 
-SleepClaw therefore supports two kinds of provider, and never blurs them:
+GoldenClaw therefore supports two kinds of provider, and never blurs them:
 
   metered — local telemetry exists. Consumption is measured continuously,
             capacity is back-solved from one panel reading, and burn rate,
             runway, and projected exhaustion are all live. (Claude Code.)
 
   manual  — no local telemetry. You read that provider's own panel and tell
-            SleepClaw the percentage. It stores the reading with a timestamp
+            GoldenClaw the percentage. It stores the reading with a timestamp
             and counts down to the reset, and it always shows the reading's
             age so a stale number can never masquerade as a live one.
 
@@ -26,7 +26,7 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-STORE = Path.home() / ".config" / "sleepclaw" / "calibration.json"
+STORE = Path.home() / ".config" / "goldenclaw" / "calibration.json"
 
 # Known providers. `metered` ones have a local-log adapter in core/quota;
 # everything else is manual until someone writes an adapter for it.
@@ -92,7 +92,7 @@ def save_manual_reading(name, percent_used, reset_spec, plan=None, now=None):
         "taken_at": now.isoformat(),
         "reset_at": reset_at.isoformat(),
         "note": ("A point-in-time reading you transcribed, not a measurement. "
-                 "SleepClaw counts down to the reset and reports the reading's "
+                 "GoldenClaw counts down to the reset and reports the reading's "
                  "age; it does not extrapolate consumption it cannot see."),
     }
     save_store(store)

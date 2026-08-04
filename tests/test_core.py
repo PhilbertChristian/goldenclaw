@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from sleepclaw import core
+from goldenclaw import core
 
 
 def _ev(when, tokens):

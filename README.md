@@ -2,6 +2,8 @@
 
 > Wake the dog. He fetches your tokens.
 
+![Max wakes up and fetches your token quota](demo.gif)
+
 You pay for an AI subscription. You have no idea how much of it you actually
 use. **Max knows** — he's a golden retriever who lives in your terminal,
 reads your *real* Claude quota, and tells you what's about to expire before

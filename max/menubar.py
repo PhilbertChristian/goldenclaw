@@ -2,7 +2,7 @@
 
 The whole integration is one tiny shell plugin that SwiftBar runs every five
 minutes: it execs `goldenclaw menubar`, whose output IS the menu bar item.
-`🐕 41%` in the strip; the dropdown shows every window with its reset clock
+`🐶 41%` in the strip; the dropdown shows every window with its reset clock
 and two actions that open the real terminal experience.
 
 Why SwiftBar instead of shipping an app: it's the same job baby-menu does

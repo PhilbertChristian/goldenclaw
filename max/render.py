@@ -306,9 +306,9 @@ def render_menubar(s):
     out = []
     if live and live.get("windows"):
         tight = min(live["windows"], key=lambda w: w["percent_left"])
-        out.append("🐕 {:.0f}%".format(tight["percent_left"]))
+        out.append("🐶 {:.0f}%".format(tight["percent_left"]))
     else:
-        out.append("🐕 zzz")
+        out.append("🐶 zzz")
     out.append("---")
 
     if live and live.get("windows"):

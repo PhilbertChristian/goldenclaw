@@ -1,24 +1,24 @@
-# Max the Golden Token Retrieval 🐕
+# Max the Golden Token Retrieval 🐶
 
-> Wake the dog. He fetches your tokens.
+> Wake Max. He fetches your tokens.
 
 ![Max wakes up and fetches your token quota](demo.gif)
 
 You pay for an AI subscription. You have no idea how much of it you actually
-use. **Max knows** — he's a golden retriever who lives in your terminal,
-reads your *real* Claude quota, and tells you what's about to expire before
-it does. He never guesses: every number he shows comes from your provider or
-your own logs.
+use. **Max knows.** He lives in your terminal, reads your *real* Claude
+quota, and tells you what's about to expire before it does. He never
+guesses: every number he shows comes from your provider or your own logs.
 
-## Try him — 30 seconds
+## Get Max — one line
 
 ```bash
-pipx install git+https://github.com/PhilbertChristian/max
-max init
+curl -fsSL https://raw.githubusercontent.com/PhilbertChristian/max/main/install.sh | sh
 ```
 
-He wakes up, introduces himself, sniffs your setup, and shows your first
-live read. That's the whole onboarding.
+That's the whole onboarding: Max installs, wakes up, introduces himself,
+checks his own setup, and shows your first live read. (Prefer doing it
+yourself? `pipx install git+https://github.com/PhilbertChristian/max` then
+`max init`.)
 
 ## The ritual
 
@@ -46,7 +46,7 @@ $ max
           total $507.84 · 430.3M tokens
 ```
 
-And in your menu bar, `🐕 41%` all day:
+And in your menu bar, `🐶 41%` all day:
 
 ```bash
 brew install --cask swiftbar && max menubar --install
@@ -71,8 +71,8 @@ Deep dives: [methodology](docs/methodology.md) ·
 
 ## Credits
 
-Dog art by **Hayley Jane Wakenshaw** and the classic sleeping figure, from
-[Christopher Johnson's ASCII Art Collection](https://asciiart.website).
+Max was drawn by **Hayley Jane Wakenshaw** (with the classic sleeping
+figure), from [Christopher Johnson's ASCII Art Collection](https://asciiart.website).
 Spiritual ancestors: [NanoClaw](https://github.com/qwibitai/nanoclaw),
 [baby-menu](https://github.com/kunchenguid/baby-menu). Claude-only today,
 and honest about it.

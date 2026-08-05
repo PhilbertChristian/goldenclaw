@@ -18,7 +18,7 @@ from .render import BOLD, CYAN, DIM, GREEN, YELLOW, c
 
 ALIAS_MARKER = "# Max the Golden Token Retrieval"
 ALIAS_BLOCK = """
-# Max the Golden Token Retrieval 🐕
+# Max the Golden Token Retrieval 🐶
 alias wakeup="goldenclaw wakeup" wake="goldenclaw wakeup"
 alias goodnight="goldenclaw goodnight" morning="goldenclaw morning" backlog="goldenclaw backlog"
 tokens() { goldenclaw report --days "${1:-7}"; }

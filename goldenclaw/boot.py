@@ -176,7 +176,7 @@ def wakeup(stream=None, skip_sleep_frame=False):
     except Exception:
         pass
 
-    _line("  " + c("Max checked your providers:", BOLD), 0.04, stream)
+    _line("  " + c("Max sniffed for tokens:", BOLD), 0.04, stream)
     _line("", 0, stream)
     if snap:
         plan = (" · " + snap["plan"].upper() + " plan") if snap.get("plan") else ""
@@ -229,7 +229,7 @@ def wakeup(stream=None, skip_sleep_frame=False):
               + c("  installed — no honest way to read its quota yet (roadmap)", DIM),
               0.03, stream)
     if absent:
-        _line(c("  also sniffed for: " + ", ".join(_prov.label(n) for n in absent)
+        _line(c("  also sniffed: " + ", ".join(_prov.label(n) for n in absent)
                 + " — not on this machine", DIM), 0.03, stream)
 
     # The week so far, per model — small print under the headline.

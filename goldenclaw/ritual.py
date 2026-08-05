@@ -72,7 +72,7 @@ def _print_budget(snapshot, err):
     if snapshot is None:
         _say(c("  (live budget unavailable — {})".format(err), DIM))
         return
-    _say(c("  Max checked your budget:", BOLD))
+    _say(c("  Max sniffed for tokens:", BOLD))
     for w in snapshot["windows"]:
         left = w["percent_left"] / 100
         color = GREEN if left > .5 else (YELLOW if left > .15 else RED)

@@ -33,6 +33,18 @@ SNIFF_LINES = [
     "( pawing at the numbers… )",
     "( checking behind the couch… )",
     "( rrrf. one sec. )",
+    "( I smell tokens. definitely tokens. )",
+    "( circling three times before starting… )",
+    "( head tilt… processing… )",
+    "( chasing the decimal point… )",
+    "( who's a good ledger? I'm a good ledger. )",
+    "( ears up. something's in the cache… )",
+    "( zoomies through the data… )",
+    "( wait. was that a squirrel? no — focus. )",
+    "( fetching. actual fetching. )",
+    "( snuffling under the API… )",
+    "( tail wagging at compute speed… )",
+    "( almost got it… it rolled under the fridge )",
 ]
 _sniff_i = 0
 
@@ -44,7 +56,7 @@ def _sniff_note(name, tool_input):
     return line
 
 
-_TANK_WORDS = ("token", "quota", "left", "usage", "remaining", "tank", "fetch")
+_TANK_WORDS = ("token", "quota", "left", "usage", "remaining", "tank", "fetch", "month", "week")
 
 
 def _is_tank_ask(text):
@@ -54,7 +66,7 @@ def _is_tank_ask(text):
     return len(low) <= 70 and any(w in low for w in _TANK_WORDS)
 
 
-def _show_tank():
+def _show_tank(days=7):
     """The full breakdown — plan, every live window, this week by model."""
     from datetime import datetime, timezone
 
@@ -65,7 +77,7 @@ def _show_tank():
         snap = live.fetch()
     except Exception:
         return False
-    print(c("        ( sniffing for tokens… )", DIM))
+    print(c("        " + _sniff_note("tank", None), DIM))
     session_left = None
     verdict = None
     plan = (" · " + snap["plan"].upper() + " plan") if snap.get("plan") else ""
@@ -98,10 +110,11 @@ def _show_tank():
         if w["id"] == "seven_day":
             verdict = forecast.week_verdict(w)
 
-    rep = core.assemble(days=7)
+    rep = core.assemble(days=days)
     if rep and rep.get("est_api_value_by_model"):
+        period = "this week" if days <= 7 else "this month" if days <= 31 else "last {} days".format(days)
         print()
-        print(c("        this week, by model:", BOLD))
+        print(c("        {}, by model:".format(period), BOLD))
         for model, usd_v in list(rep["est_api_value_by_model"].items())[:5]:
             tokens = rep["by_model"][model]["total"]
             print("          {:<26} {:>8}   ".format(model, fmt(tokens))
@@ -154,9 +167,11 @@ def run(model=None):
                     break
                 if not user:
                     continue
-                if _is_tank_ask(user) and _show_tank():
-                    print()
-                    continue
+                if _is_tank_ask(user):
+                    days = 30 if ("month" in user.lower() or "30" in user) else 7
+                    if _show_tank(days=days):
+                        print()
+                        continue
                 await client.query(user)
                 first_text = True
                 async for msg in client.receive_response():

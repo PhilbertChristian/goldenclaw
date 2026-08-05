@@ -210,9 +210,27 @@ In the NanoClaw spirit — no monitoring dashboard, ask the agent — GoldenClaw
 ships a conversation layer over the data:
 
 ```bash
-max                                      # talk to Max directly (alias for `goldenclaw chat`)
-goldenclaw ask "how are we looking this week?"
+max
 ```
+
+```
+  Max is listening.  ask about your tokens · `exit` to leave
+
+  you › how much of my week is left?
+        ( sniffs — goldenclaw quota --json )
+  Max › 41% of your week left, and it resets tomorrow at 3pm 🐾
+```
+
+`max` opens Max's own REPL — his prompt, his colors, his sniffing between
+tool calls — built on the Claude Agent SDK (the NanoClaw pattern: the engine
+as a library, the surface our own). It needs the one optional dependency:
+
+```bash
+pipx inject goldenclaw claude-agent-sdk
+```
+
+Without it, `max` falls back to a plain Claude Code session wearing his
+persona. One-shot questions: `goldenclaw ask "..."`.
 
 Max answers in his own voice, under one iron rule: **he never invents a
 number** — every figure comes from running the sensor first. He can read
@@ -395,6 +413,12 @@ looks at.
 **How do I uninstall?**
 `pipx uninstall goldenclaw`. It leaves nothing behind except
 `~/.config/goldenclaw/pricing.json` if you created one.
+
+## Art
+
+The dogs are from [Christopher Johnson's ASCII Art Collection](https://asciiart.website):
+the sitting puppy and the bone-fetch are by **Hayley Jane Wakenshaw** (the
+`hjw` signature stays in the art, as it should).
 
 ## License
 

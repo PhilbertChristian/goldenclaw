@@ -21,22 +21,40 @@ DOG_SLEEPING = r"""
            ( Max is sleeping )
 """
 
-DOG_WAKING = r"""
-                                    * ~ *
-        |\__/,|   _,,,---,,_
-        /,`.-'`'    -.  ;-;;,_
-       |,4-  ) )-,_..;\ (  `'-'
-      '---''(_/--'  `-'\_)
-             ( stretch )
-"""
+DOG_WAKING = "\n".join([
+    '   /(',
+    '  //\\\\',
+    ' //   )_.-"""-._,-""-.',
+    " \\\\ ^,'_\\     /_\\     )",
+    '  `./ /O\\|   |/O\\\\   /',
+    '    \\ \\_/|   |\\_/ \\_/',
+    "     \\ .'  _  `. /",
+    ' .-.  ( .:(_):. )  ,-.',
+    "(   `._`._.-._,'_,'   )",
+    ' )                   (',
+    '(   .-------------.   ) hjw',
+    " `-'               `-'",
+    '  ( Max fetched your tokens )',
+])
 
 
-DOG_SITTING = r"""
-        |\__/,|   (`\
-      _.|o o  |_   ) )
-    -(((---(((--------
-      ( Max wakes up )
-"""
+DOG_SITTING = "\n".join([
+    '                     ,--.',
+    "                   _/ <`-'",
+    "               ,-.' \\--\\_",
+    '              ((`-.__\\   )',
+    "               \\`'    @ (_",
+    '               (        (_)',
+    "              ,'`-._(`-._/",
+    "           ,-'    )&&) ))",
+    "        ,-'      /&&&%-'",
+    "      ,' __  ,- {&&&&/",
+    "     / ,'  \\|   |\\&&'\\",
+    "    (       |   |' \\  `--.",
+    "(%--'\\   ,--.\\   `-.`-._)))",
+    " `---'`-/__)))`-._)))       hjw",
+    '        ( Max wakes up )',
+])
 
 
 def wake_animation(stream=None, delay=0.55):
@@ -127,6 +145,16 @@ def banner(waking=False, stream=None):
     stream.flush()
 
 
+def _weekly_cap_usd():
+    """Back-solved weekly capacity in API-rate dollars, if calibrated."""
+    try:
+        from . import quota
+        cal = quota.load()
+        return (cal or {}).get("pools", {}).get("weekly", {}).get("cap_units")
+    except Exception:
+        return None
+
+
 def _max_quip(verdict, session_left):
     """Max's one-liner — personality on top of REAL numbers, never instead of
     them. The quip is presentation; every figure in it comes from the data."""
@@ -137,9 +165,12 @@ def _max_quip(verdict, session_left):
         return ("easy, chief — at this pace you hit the wall in ~{:.0f}h, "
                 "before the reset. I'd slow down.".format(verdict["hours_to_wall"]))
     if verdict["verdict"] == forecast.WASTE:
-        return ("plenty in the tank — but ~{:.0f}% of the week expires unused "
-                "at this pace. throw me a bone tonight? (`goodnight`)".format(
-                    verdict["projected_unused_pct"]))
+        pct = verdict["projected_unused_pct"]
+        msg = "I found the tokens — ~{:.0f}% of this week's will expire unused".format(pct)
+        cap = _weekly_cap_usd()
+        if cap:
+            msg += " (≈ ${:.0f} of value at API rates)".format(cap * pct / 100)
+        return msg + ". `goodnight` puts them to work."
     if session_left is not None and session_left < 15:
         return "on pace for the week — but this session's nearly out. short break? 🐾"
     return "right on pace. good human. 🐾"

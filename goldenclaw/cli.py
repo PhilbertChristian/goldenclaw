@@ -221,10 +221,17 @@ def main(argv=None):
 
 
 def max_main(argv=None):
-    """The `max` command — the dog himself. Bare `max` talks to him;
+    """The `max` command — the dog himself. Bare `max` opens his own REPL
+    (Agent SDK skin) when available, falling back to subprocess chat;
     `max init` sets him up; every goldenclaw subcommand works too."""
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv:
+        from . import maxrepl
+        rc = maxrepl.run()
+        if rc is not None:
+            return rc
+        print("  (for Max's full skin: pipx inject goldenclaw claude-agent-sdk)",
+              file=sys.stderr)
         from . import agent
         return agent.chat()
     return main(argv)

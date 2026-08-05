@@ -44,8 +44,10 @@ is the intended customization model — this file orients you.
    else, and is never printed, logged, returned, or persisted.
 2. **Python 3.9 compatible**: no nested same-quote f-strings, no `match`,
    no `tomllib`.
-3. **Zero runtime dependencies.** If a change needs a package, it's designed
-   wrong.
+3. **Zero runtime dependencies in the core.** One sanctioned optional extra
+   exists — `claude-agent-sdk` for Max's REPL (`maxrepl.py`), installed via
+   `pipx inject`. The core must keep working without it; `max` falls back to
+   subprocess chat. Nothing else gets a dependency.
 4. **Conservative estimation**: any new derived metric must state its bias
    and err *against* the flattering direction. Update
    `docs/methodology.md` in the same change.

@@ -55,11 +55,11 @@ def _is_tank_ask(text):
 
 
 def _show_tank():
-    """The bars, exactly like wakeup — deterministic, instant, free."""
+    """The full breakdown — plan, every live window, this week by model."""
     from datetime import datetime, timezone
 
-    from . import forecast, live
-    from .render import GREEN, RED, bar
+    from . import boot, core, forecast, live
+    from .render import GREEN, RED, bar, fmt
 
     try:
         snap = live.fetch()
@@ -68,8 +68,8 @@ def _show_tank():
     print(c("        ( sniffing for tokens… )", DIM))
     session_left = None
     verdict = None
-    plan = (" · " + snap["plan"].upper()) if snap.get("plan") else ""
-    print(c("  Max › ", BOLD, YELLOW) + c("the tank" + plan + ":", BOLD))
+    plan = (" · " + snap["plan"].upper() + " plan") if snap.get("plan") else ""
+    print(c("  Max › ", BOLD, YELLOW) + c("CLAUDE" + plan, BOLD))
     for w in snap["windows"]:
         left = w["percent_left"]
         color = GREEN if left > 50 else (YELLOW if left > 15 else RED)
@@ -97,7 +97,19 @@ def _show_tank():
             session_left = left
         if w["id"] == "seven_day":
             verdict = forecast.week_verdict(w)
-    from . import boot
+
+    rep = core.assemble(days=7)
+    if rep and rep.get("est_api_value_by_model"):
+        print()
+        print(c("        this week, by model:", BOLD))
+        for model, usd_v in list(rep["est_api_value_by_model"].items())[:5]:
+            tokens = rep["by_model"][model]["total"]
+            print("          {:<26} {:>8}   ".format(model, fmt(tokens))
+                  + c("${:,.2f}".format(usd_v), GREEN))
+        print(c("          total ${:,.2f} · {} tokens".format(
+            rep["est_api_value_usd"], fmt(rep["tokens"]["total"])), DIM))
+
+    print()
     print("        " + boot._max_quip(verdict, session_left))
     return True
 
@@ -126,7 +138,9 @@ def run(model=None):
             model=model,
         )
         async with ClaudeSDKClient(options=options) as client:
-            boot.wake_animation()
+            for row in boot.DOG_SITTING.split("\n"):
+                print(c("  " + row, YELLOW))
+            print()
             print("  " + c("Max is listening.", BOLD, YELLOW)
                   + c("  ask about your tokens · `exit` to leave", DIM))
             print()

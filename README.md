@@ -44,7 +44,7 @@ waste, then put the idle hours — mostly the ones you spend asleep — to work.
 ## Quick start
 
 ```bash
-pipx install git+https://github.com/PhilbertChristian/goldenclaw
+pipx install git+https://github.com/PhilbertChristian/max
 max init
 ```
 
@@ -91,7 +91,7 @@ forecast — personality on top of the data, never instead of it.
 Or without installing anything:
 
 ```bash
-git clone https://github.com/PhilbertChristian/goldenclaw && cd goldenclaw
+git clone https://github.com/PhilbertChristian/max && cd goldenclaw
 python3 -m goldenclaw
 ```
 

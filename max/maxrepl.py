@@ -80,6 +80,7 @@ def _show_tank(days=7):
     print(c("        " + _sniff_note("tank", None), DIM))
     session_left = None
     verdict = None
+    week_cap = None
     plan = (" · " + snap["plan"].upper() + " plan") if snap.get("plan") else ""
     print(c("  Max › ", BOLD, YELLOW) + c("CLAUDE" + plan, BOLD))
     for w in snap["windows"]:
@@ -98,10 +99,9 @@ def _show_tank(days=7):
                 pass
         usd = ""
         if w["id"] == "seven_day":
-            from .boot import _weekly_cap_usd
-            cap = _weekly_cap_usd()
-            if cap:
-                usd = " · ≈ ${:.0f} of value left".format(cap * left / 100)
+            week_cap = boot._week_cap_usd(w)
+            if week_cap:
+                usd = " · ≈ ${:.0f} left at your mix".format(week_cap * left / 100)
         print("        {:<18} ".format(w["label"])
               + c(bar(left / 100, width=14), color) + " "
               + c("{:.0f}% left".format(left), BOLD, color) + c(usd + reset, DIM))
@@ -123,7 +123,7 @@ def _show_tank(days=7):
             rep["est_api_value_usd"], fmt(rep["tokens"]["total"])), DIM))
 
     print()
-    print("        " + boot._max_quip(verdict, session_left))
+    print("        " + boot._max_quip(verdict, session_left, week_cap))
     return True
 
 

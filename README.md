@@ -20,31 +20,30 @@ checks his own setup, and shows your first live read. (Prefer doing it
 yourself? `pipx install git+https://github.com/PhilbertChristian/max` then
 `max init`.)
 
-## The ritual
-
-```
-$ goldenclaw                            $ wakeup
-                      z
-        |\      _,,,---,,_                CLAUDE · MAX plan · live
-        /,`.-'`'    -.  ;-;;,_            session (5h)  ▐████████▌ 98% left
-       |,4-  ) )-,_..;\ (  `'-'           week          ▐████░░░░▌ 40% left · ≈ $39 left
-      '---''(_/--'  `-'\_)
-           ( Max is sleeping )            Max says: I found the tokens — ~32% of
-                                          this week's will expire unused (≈ $31). 🐾
-```
-
-Talk to him:
+## The whole thing is one word
 
 ```
 $ max
-  you › fetch my monthly tokens
-        ( where did I bury my claws again? )
+        ( Max wakes up )
+
+  Max is listening.  ask about your tokens · `exit` to leave
+
+  you › tokens
+        ( sniffing for tokens… )
   Max › CLAUDE · MAX plan
-        this month, by model:
-          claude-fable-5    210.3M   $336.30
+        session (5h)       ▐████████▌ 93% left · resets in 4h
+        week · all models  ▐████░░░░▌ 39% left · ≈ $182 left at your mix
+
+  you › monthly
+        ( where did I bury my claws again? )
+  Max › this month, by model:
+          claude-fable-5    231.4M   $358.74
           claude-opus-5     134.8M   $98.16
-          total $507.84 · 430.3M tokens
+          total $530.28 · 451.4M tokens
 ```
+
+Quota answers are instant and free — they're code, not model calls. Anything
+else you type is a real conversation with him.
 
 And in your menu bar, `🐶 41%` all day:
 
@@ -67,7 +66,7 @@ brew install --cask swiftbar && max menubar --install
 
 Deep dives: [methodology](docs/methodology.md) ·
 [architecture](docs/architecture.md) · experimental overnight runner:
-`goldenclaw goodnight --help`
+`max goodnight --help`
 
 ## Credits
 

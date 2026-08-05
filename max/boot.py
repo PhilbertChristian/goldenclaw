@@ -120,8 +120,8 @@ def sequence(stream=None, delay=0.06):
     for row in DOG_SLEEPING.strip("\n").split("\n"):
         _line(c("  " + row, YELLOW), delay * 0.5, stream)
     _line("", delay, stream)
-    _line("  " + c("G O L D E N C L A W", BOLD, MAGENTA)
-          + c("   your subscription works the night shift", DIM), delay, stream)
+    _line("  " + c("M A X", BOLD, MAGENTA)
+          + c("   the golden token retrieval", DIM), delay, stream)
     _line("", delay, stream)
 
     for label, ok, detail in _checks():
@@ -129,8 +129,7 @@ def sequence(stream=None, delay=0.06):
         _line("  {} {:<12} {}".format(mark, label, c(detail, DIM)), delay, stream)
 
     _line("", delay, stream)
-    _line(c("  goldenclaw quota    what's left right now (live)", DIM), delay, stream)
-    _line(c("  goldenclaw          where it went, and what expired unused", DIM), delay, stream)
+    _line(c("  max — that's all you need", DIM), delay, stream)
     _line("", 0, stream)
 
 
@@ -144,17 +143,35 @@ def banner(waking=False, stream=None):
     stream.flush()
 
 
-def _weekly_cap_usd():
-    """Back-solved weekly capacity in API-rate dollars, if calibrated."""
+def _week_cap_usd(week_window):
+    """Weekly capacity in API-rate dollars, estimated LIVE: what this week
+    has measurably cost (from local logs since the live week start) divided
+    by the live percent-used. Self-calibrating every time it runs — prices
+    remaining capacity at your actual model mix, Fable and all. Returns None
+    early in a week or without logs; falls back to stored calibration."""
     try:
-        from . import quota
+        from datetime import datetime, timedelta, timezone
+
+        from . import core, quota
+
+        used_pct = week_window.get("percent_used") if week_window else None
+        resets = week_window.get("resets_at") if week_window else None
+        if resets and used_pct and used_pct >= 3:
+            reset_at = datetime.fromisoformat(resets.replace("Z", "+00:00"))
+            if reset_at.tzinfo is None:
+                reset_at = reset_at.replace(tzinfo=timezone.utc)
+            week_start = reset_at - timedelta(days=7)
+            spent = quota.consumed(core.find_log_dirs(), week_start,
+                                   datetime.now(timezone.utc))
+            if spent > 0:
+                return spent / (used_pct / 100.0)
         cal = quota.load()
         return (cal or {}).get("pools", {}).get("weekly", {}).get("cap_units")
     except Exception:
         return None
 
 
-def _max_quip(verdict, session_left):
+def _max_quip(verdict, session_left, cap_usd=None):
     """Max's one-liner — personality on top of REAL numbers, never instead of
     them. The quip is presentation; every figure in it comes from the data."""
     from . import forecast
@@ -166,9 +183,8 @@ def _max_quip(verdict, session_left):
     if verdict["verdict"] == forecast.WASTE:
         pct = verdict["projected_unused_pct"]
         msg = "I found the tokens — ~{:.0f}% of this week's will expire unused".format(pct)
-        cap = _weekly_cap_usd()
-        if cap:
-            msg += " (≈ ${:.0f} of value at API rates)".format(cap * pct / 100)
+        if cap_usd:
+            msg += " (≈ ${:.0f} of value at your mix)".format(cap_usd * pct / 100)
         return msg + ". 🐾"
     if session_left is not None and session_left < 15:
         return "on pace for the week — but this session's nearly out. short break? 🐾"
@@ -200,6 +216,7 @@ def wakeup(stream=None, skip_sleep_frame=False):
     snap = None
     session_left = None
     verdict = None
+    week_cap = None
     try:
         from . import live
         snap = live.fetch()
@@ -228,9 +245,9 @@ def wakeup(stream=None, skip_sleep_frame=False):
                     pass
             usd = ""
             if w["id"] == "seven_day":
-                cap = _weekly_cap_usd()
-                if cap:
-                    usd = " · ≈ ${:.0f} of value left".format(cap * left / 100)
+                week_cap = _week_cap_usd(w)
+                if week_cap:
+                    usd = " · ≈ ${:.0f} left at your mix".format(week_cap * left / 100)
             _line("    {:<18} ".format(w["label"])
                   + c(bar(left / 100, width=14), color) + " "
                   + c("{:.0f}% left".format(left), BOLD, color)
@@ -241,7 +258,7 @@ def wakeup(stream=None, skip_sleep_frame=False):
                 verdict = forecast.week_verdict(w)
         _line("", 0, stream)
         _line("  " + c("Max says:", BOLD, YELLOW) + " "
-              + _max_quip(verdict, session_left), 0.05, stream)
+              + _max_quip(verdict, session_left, week_cap), 0.05, stream)
     else:
         _line("  " + c("Max can't reach your quota.", YELLOW), 0, stream)
         if _sh.which("claude") is None:
@@ -278,7 +295,7 @@ def wakeup(stream=None, skip_sleep_frame=False):
                 model, fmt(rep["by_model"][model]["total"]), usd), DIM), 0.02, stream)
 
     _line("", 0, stream)
-    _line(c("  more: `max` talk to him · `tokens` history", DIM), 0, stream)
+    _line(c("  more: `max` — ask him anything about your tokens", DIM), 0, stream)
     _line("", 0, stream)
     return 0
 

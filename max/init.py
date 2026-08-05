@@ -19,11 +19,11 @@ from .render import BOLD, CYAN, DIM, GREEN, YELLOW, c
 ALIAS_MARKER = "# Max the Golden Token Retrieval"
 ALIAS_BLOCK = """
 # Max the Golden Token Retrieval 🐶
-alias wakeup="goldenclaw wakeup" wake="goldenclaw wakeup"
-alias goodnight="goldenclaw goodnight" morning="goldenclaw morning" backlog="goldenclaw backlog"
-tokens() { goldenclaw report --days "${1:-7}"; }
-left()   { goldenclaw quota "$@"; }
-claw()   { if [ $# -eq 0 ]; then goldenclaw chat; else goldenclaw ask "$*"; fi; }
+alias wakeup="max wakeup" wake="max wakeup"
+alias goodnight="max goodnight" morning="max morning" backlog="max backlog"
+tokens() { max report --days "${1:-7}"; }
+left()   { max quota "$@"; }
+claw()   { if [ $# -eq 0 ]; then max chat; else max ask "$*"; fi; }
 """
 
 
@@ -169,10 +169,9 @@ def run():
                 fh.write(ALIAS_BLOCK)
             _say("  " + c("✓", GREEN) + " added — open a new terminal to use them")
         else:
-            _max("fair — `goldenclaw <command>` always works.")
+            _max("fair — `max <command>` always works.")
 
     _say()
-    _max("that's me set up. `goldenclaw` and I'll be sleeping; "
-         "`wakeup` when you want the numbers. 🐾")
+    _max("that's me set up. just type `max` whenever you want me. 🐾")
     _say()
     return 0

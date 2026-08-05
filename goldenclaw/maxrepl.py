@@ -112,9 +112,7 @@ def run(model=None):
             model=model,
         )
         async with ClaudeSDKClient(options=options) as client:
-            for row in boot.DOG_SITTING.split("\n"):
-                print(c("  " + row, YELLOW))
-            print()
+            boot.wake_animation()
             print("  " + c("Max is listening.", BOLD, YELLOW)
                   + c("  ask about your tokens · `exit` to leave", DIM))
             print()
@@ -148,6 +146,7 @@ def run(model=None):
                 print()
             print(c("  ( Max curls back up )", DIM))
             print()
+            boot.banner()
         return 0
 
     try:

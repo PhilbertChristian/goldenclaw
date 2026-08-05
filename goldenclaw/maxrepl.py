@@ -12,7 +12,7 @@ back to the subprocess chat and says how to upgrade.
 
 Same iron rule as everywhere: Max's numbers come from running the sensor.
 The REPL pre-approves exactly the goldenclaw commands and read-only file
-access he needs — nothing else runs without appearing in the transcript.
+access he needs — his tool surface is locked down, and his working noises are dog\nthoughts rather than command dumps.
 """
 
 import sys
@@ -21,13 +21,27 @@ from .agent import SYSTEM_PROMPT
 from .render import BOLD, CYAN, DIM, GREEN, YELLOW, c
 
 
+# What Max "says" while working. Rotated in order, never repeated back to
+# back — the raw commands stay out of sight (his tool surface is locked to
+# goldenclaw + read-only access, so there's nothing scary to hide).
+SNIFF_LINES = [
+    "( sniffing for tokens… )",
+    "( where did I bury my claws again? )",
+    "( digging through the logs… )",
+    "( nose to the ground… )",
+    "( following the scent… )",
+    "( pawing at the numbers… )",
+    "( checking behind the couch… )",
+    "( rrrf. one sec. )",
+]
+_sniff_i = 0
+
+
 def _sniff_note(name, tool_input):
-    if name == "Bash":
-        cmd = str((tool_input or {}).get("command", ""))[:60]
-        return "( sniffs — {} )".format(cmd) if cmd else "( sniffs around )"
-    if name in ("Read", "Grep", "Glob"):
-        return "( nose in the files )"
-    return "( {} )".format(name.lower())
+    global _sniff_i
+    line = SNIFF_LINES[_sniff_i % len(SNIFF_LINES)]
+    _sniff_i += 1
+    return line
 
 
 _TANK_WORDS = ("token", "quota", "left", "usage", "remaining", "tank", "fetch")
@@ -51,7 +65,7 @@ def _show_tank():
         snap = live.fetch()
     except Exception:
         return False
-    print(c("        ( sniffs — live quota )", DIM))
+    print(c("        ( sniffing for tokens… )", DIM))
     session_left = None
     verdict = None
     plan = (" · " + snap["plan"].upper()) if snap.get("plan") else ""

@@ -30,6 +30,58 @@ def _sniff_note(name, tool_input):
     return "( {} )".format(name.lower())
 
 
+_TANK_WORDS = ("token", "quota", "left", "usage", "remaining", "tank", "fetch")
+
+
+def _is_tank_ask(text):
+    """A short ask about quota goes straight to the renderer — checking your
+    tokens must never spend tokens, even mid-conversation."""
+    low = text.lower()
+    return len(low) <= 70 and any(w in low for w in _TANK_WORDS)
+
+
+def _show_tank():
+    """The bars, exactly like wakeup — deterministic, instant, free."""
+    from datetime import datetime, timezone
+
+    from . import forecast, live
+    from .render import GREEN, RED, bar
+
+    try:
+        snap = live.fetch()
+    except Exception:
+        return False
+    print(c("        ( sniffs — live quota )", DIM))
+    session_left = None
+    verdict = None
+    plan = (" · " + snap["plan"].upper()) if snap.get("plan") else ""
+    print(c("  Max › ", BOLD, YELLOW) + c("the tank" + plan + ":", BOLD))
+    for w in snap["windows"]:
+        left = w["percent_left"]
+        color = GREEN if left > 50 else (YELLOW if left > 15 else RED)
+        reset = ""
+        if w.get("resets_at"):
+            try:
+                dt = datetime.fromisoformat(w["resets_at"].replace("Z", "+00:00"))
+                hours = (dt - datetime.now(timezone.utc)).total_seconds() / 3600
+                if hours >= 1:
+                    reset = " · resets in {:.0f}h".format(hours)
+                elif hours > 0:
+                    reset = " · resets in {:.0f}m".format(hours * 60)
+            except ValueError:
+                pass
+        print("        {:<18} ".format(w["label"])
+              + c(bar(left / 100, width=14), color) + " "
+              + c("{:.0f}% left".format(left), BOLD, color) + c(reset, DIM))
+        if w["id"] == "five_hour":
+            session_left = left
+        if w["id"] == "seven_day":
+            verdict = forecast.week_verdict(w)
+    from . import boot
+    print("        " + boot._max_quip(verdict, session_left))
+    return True
+
+
 def run(model=None):
     """Returns an exit code, or None when the SDK isn't installed."""
     try:
@@ -69,6 +121,9 @@ def run(model=None):
                 if user.lower() in ("exit", "quit", "q", "bye"):
                     break
                 if not user:
+                    continue
+                if _is_tank_ask(user) and _show_tank():
+                    print()
                     continue
                 await client.query(user)
                 first_text = True

@@ -59,7 +59,10 @@ Interpretation rules you always apply:
     lower whenever you cite it.
   - Raw token totals are cache-read-dominated; use est_api_value_usd for
     anything cost-shaped.
-  - Answer first, number first, then one line of context. Short replies.
+  - Answer first, number first, then AT MOST one line of context. Hard cap:
+    two short lines per reply unless the human explicitly asks for detail.
+    Never use markdown headers or bold. Never volunteer diagnostics,
+    calibration notes, or caveats they didn't ask about.
 """
 
 ASK_ALLOWED_TOOLS = "Bash(goldenclaw:*)"

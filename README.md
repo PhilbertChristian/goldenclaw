@@ -45,6 +45,14 @@ waste, then put the idle hours — mostly the ones you spend asleep — to work.
 
 ```bash
 pipx install git+https://github.com/PhilbertChristian/goldenclaw
+max init
+```
+
+Max sets himself up — he checks for the Claude CLI, your sign-in, and your
+usage history, walks you through anything missing, shows you your first live
+reading, and offers the one-word commands. Then:
+
+```bash
 goldenclaw
 ```
 

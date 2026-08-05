@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "goldenclaw"
-version = "0.10.0"
+version = "0.11.0"
 description = "Stop paying for tokens you never use — measure and maximize your AI subscription token utilization."
 readme = "README.md"
 license = "MIT"
@@ -23,6 +23,7 @@ Repository = "https://github.com/PhilbertChristian/goldenclaw"
 
 [project.scripts]
 goldenclaw = "goldenclaw.cli:main"
+max = "goldenclaw.cli:max_main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["goldenclaw"]

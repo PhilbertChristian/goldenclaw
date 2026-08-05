@@ -26,6 +26,7 @@ def main(argv=None):
     sub.add_parser("doctor", help="verify GoldenClaw can find your usage data")
     sub.add_parser("boot", help="banner and environment check")
     sub.add_parser("wakeup", help="wake Max — he tells you what is left")
+    sub.add_parser("init", help="Max sets himself up — checks, sign-in, one-word commands")
 
     p_quota = sub.add_parser("quota", help="live quota: how much is left, when it resets")
     p_quota.add_argument("--json", action="store_true", dest="as_json",
@@ -84,6 +85,10 @@ def main(argv=None):
     if args.cmd == "wakeup":
         from . import boot
         return boot.wakeup()
+
+    if args.cmd == "init":
+        from . import init
+        return init.run()
 
     if args.cmd == "doctor":
         d = core.doctor()
@@ -213,6 +218,16 @@ def main(argv=None):
     else:
         print(render.render_report(report))
     return 0
+
+
+def max_main(argv=None):
+    """The `max` command — the dog himself. Bare `max` talks to him;
+    `max init` sets him up; every goldenclaw subcommand works too."""
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if not argv:
+        from . import agent
+        return agent.chat()
+    return main(argv)
 
 
 if __name__ == "__main__":

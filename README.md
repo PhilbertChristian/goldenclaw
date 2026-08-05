@@ -427,6 +427,21 @@ clock, plus "Wake Max in Terminal" and "Talk to Max" — the full terminal
 experience one click away. The whole integration is a 4-line SwiftBar
 plugin; delete the file and Max leaves the bar.
 
+## Footprint — deliberately minimal
+
+Max is invasive-by-consent only. The ladder, each rung opt-in:
+
+| Level | What it touches | Undo |
+|---|---|---|
+| `pipx install` | one pipx venv, two commands on PATH | `pipx uninstall goldenclaw` |
+| using Max | reads logs + Keychain credential; writes only `~/.config/goldenclaw/` | `rm -rf ~/.config/goldenclaw` |
+| `max init` aliases | one marked block in your shell rc, **only after you say yes** | delete the block |
+| `max menubar --install` | one 4-line plugin file | `max menubar --uninstall` |
+
+No daemons, no launch agents, no telemetry, nothing runs unless you run it —
+the menu bar refresh is SwiftBar executing a script, not a Max background
+process. The one network call remains `quota`'s, to your own provider.
+
 ## Art
 
 The dogs are from [Christopher Johnson's ASCII Art Collection](https://asciiart.website):

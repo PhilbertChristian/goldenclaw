@@ -78,3 +78,21 @@ def install(out=print):
     if host == "SwiftBar":
         out("    (If he doesn't appear, click the SwiftBar icon → Refresh All.)")
     return 0
+
+
+def uninstall(out=print):
+    """Remove Max from the menu bar — delete the plugin, touch nothing else."""
+    removed = []
+    for d in filter(None, [_swiftbar_plugin_dir(), XBAR_PLUGIN_DIR]):
+        plugin = d / PLUGIN_NAME
+        if plugin.exists():
+            plugin.unlink()
+            removed.append(str(plugin))
+    if removed:
+        for r in removed:
+            out("  ✓ removed " + r)
+        out("  Max has left the menu bar. SwiftBar itself is yours to keep or")
+        out("  remove (`brew uninstall --cask swiftbar`).")
+    else:
+        out("  Max wasn't in the menu bar.")
+    return 0

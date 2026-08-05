@@ -55,6 +55,8 @@ def main(argv=None):
     p_mb = sub.add_parser("menubar", help="Max in the macOS menu bar")
     p_mb.add_argument("--install", action="store_true",
                       help="install the SwiftBar/xbar plugin")
+    p_mb.add_argument("--uninstall", action="store_true",
+                      help="remove the plugin — leaves nothing behind")
 
     p_night = sub.add_parser("goodnight", help="run your backlog overnight, inside guardrails")
     p_night.add_argument("--dry-run", action="store_true", help="show the plan without running")
@@ -104,6 +106,9 @@ def main(argv=None):
         return 0
 
     if args.cmd == "menubar":
+        if args.uninstall:
+            from . import menubar
+            return menubar.uninstall()
         if args.install:
             from . import menubar
             return menubar.install()

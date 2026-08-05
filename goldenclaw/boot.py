@@ -131,7 +131,6 @@ def sequence(stream=None, delay=0.06):
     _line("", delay, stream)
     _line(c("  goldenclaw quota    what's left right now (live)", DIM), delay, stream)
     _line(c("  goldenclaw          where it went, and what expired unused", DIM), delay, stream)
-    _line(c("  goodnight          put the idle hours to work", DIM), delay, stream)
     _line("", 0, stream)
 
 
@@ -170,7 +169,7 @@ def _max_quip(verdict, session_left):
         cap = _weekly_cap_usd()
         if cap:
             msg += " (≈ ${:.0f} of value at API rates)".format(cap * pct / 100)
-        return msg + ". `goodnight` puts them to work."
+        return msg + ". 🐾"
     if session_left is not None and session_left < 15:
         return "on pace for the week — but this session's nearly out. short break? 🐾"
     return "right on pace. good human. 🐾"
@@ -227,10 +226,15 @@ def wakeup(stream=None, skip_sleep_frame=False):
                             else " · resets in {:.0f}m".format(hours * 60)
                 except ValueError:
                     pass
+            usd = ""
+            if w["id"] == "seven_day":
+                cap = _weekly_cap_usd()
+                if cap:
+                    usd = " · ≈ ${:.0f} of value left".format(cap * left / 100)
             _line("    {:<18} ".format(w["label"])
                   + c(bar(left / 100, width=14), color) + " "
                   + c("{:.0f}% left".format(left), BOLD, color)
-                  + c(reset, DIM), 0.05, stream)
+                  + c(usd + reset, DIM), 0.05, stream)
             if w["id"] == "five_hour":
                 session_left = left
             if w["id"] == "seven_day":
@@ -274,7 +278,7 @@ def wakeup(stream=None, skip_sleep_frame=False):
                 model, fmt(rep["by_model"][model]["total"]), usd), DIM), 0.02, stream)
 
     _line("", 0, stream)
-    _line(c("  more: `max` talk to him · `tokens` history · `goodnight` night shift", DIM), 0, stream)
+    _line(c("  more: `max` talk to him · `tokens` history", DIM), 0, stream)
     _line("", 0, stream)
     return 0
 

@@ -70,9 +70,15 @@ def _show_tank():
                     reset = " · resets in {:.0f}m".format(hours * 60)
             except ValueError:
                 pass
+        usd = ""
+        if w["id"] == "seven_day":
+            from .boot import _weekly_cap_usd
+            cap = _weekly_cap_usd()
+            if cap:
+                usd = " · ≈ ${:.0f} of value left".format(cap * left / 100)
         print("        {:<18} ".format(w["label"])
               + c(bar(left / 100, width=14), color) + " "
-              + c("{:.0f}% left".format(left), BOLD, color) + c(reset, DIM))
+              + c("{:.0f}% left".format(left), BOLD, color) + c(usd + reset, DIM))
         if w["id"] == "five_hour":
             session_left = left
         if w["id"] == "seven_day":

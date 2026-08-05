@@ -80,8 +80,8 @@ Max wakes up, checks the tank, and tells you what's left — with an opinion:
     session (5h)       ▐████████████░░▌ 84% left · resets in 2h
     week · all models  ▐██████░░░░░░░░▌ 41% left · resets in 22h
 
-  Max says: plenty in the tank — but ~32% of the week expires unused
-            at this pace. throw me a bone tonight? (`goodnight`)
+  Max says: I found the tokens — ~32% of this week's will expire
+            unused (≈ $31 of value at API rates). 🐾
 ```
 
 Checking your quota never spends your quota: the numbers come from your

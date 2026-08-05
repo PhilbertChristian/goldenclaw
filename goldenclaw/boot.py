@@ -193,7 +193,7 @@ def wakeup(stream=None, skip_sleep_frame=False):
         _line("", 0, stream)
     else:
         wake_animation(stream)
-    _line("  " + c("Max is up.", BOLD, YELLOW) + c("  🐾  Max the Golden Token Retriever", DIM), 0.05, stream)
+    _line("  " + c("Max is up.", BOLD, YELLOW) + c("  🐾  Max the Golden Token Retrieval", DIM), 0.05, stream)
     _line("", 0, stream)
 
     # What's left — the whole point.

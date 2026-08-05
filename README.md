@@ -1,4 +1,4 @@
-# Max the Golden Token Retriever 🐕
+# Max the Golden Token Retrieval 🐕
 
 **Wake the dog. He tells you what's left.**
 

@@ -16,9 +16,9 @@ from pathlib import Path
 from . import boot, core
 from .render import BOLD, CYAN, DIM, GREEN, YELLOW, c
 
-ALIAS_MARKER = "# Max the Golden Token Retriever"
+ALIAS_MARKER = "# Max the Golden Token Retrieval"
 ALIAS_BLOCK = """
-# Max the Golden Token Retriever 🐕
+# Max the Golden Token Retrieval 🐕
 alias wakeup="goldenclaw wakeup" wake="goldenclaw wakeup"
 alias goodnight="goldenclaw goodnight" morning="goldenclaw morning" backlog="goldenclaw backlog"
 tokens() { goldenclaw report --days "${1:-7}"; }
@@ -91,7 +91,7 @@ def run():
 
     boot.wake_animation()
     _say("  " + c("Max is up.", BOLD, YELLOW)
-         + c("  🐾  Max the Golden Token Retriever", DIM))
+         + c("  🐾  Max the Golden Token Retrieval", DIM))
     _say()
     _max("hi. I fetch your AI token quota so you always know what's left.")
     _max("let me sniff around and get myself set up — three checks.")

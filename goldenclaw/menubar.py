@@ -67,7 +67,7 @@ def install(out=print):
     plugin = target_dir / PLUGIN_NAME
     plugin.write_text(
         "#!/bin/bash\n"
-        "# Max the Golden Token Retriever — menu bar plugin.\n"
+        "# Max the Golden Token Retrieval — menu bar plugin.\n"
         "# Delete this file to remove Max from the menu bar.\n"
         'exec "{}" menubar\n'.format(exe)
     )

@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "goldenclaw"
+name = "max-token-retrieval"
 version = "0.14.1"
 description = "Stop paying for tokens you never use — measure and maximize your AI subscription token utilization."
 readme = "README.md"
@@ -25,8 +25,8 @@ Repository = "https://github.com/PhilbertChristian/goldenclaw"
 agent = ["claude-agent-sdk"]
 
 [project.scripts]
-goldenclaw = "goldenclaw.cli:main"
-max = "goldenclaw.cli:max_main"
+goldenclaw = "max.cli:main"
+max = "max.cli:max_main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["goldenclaw"]
+packages = ["max"]

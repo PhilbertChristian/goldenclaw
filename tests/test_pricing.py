@@ -1,6 +1,6 @@
 import unittest
 
-from goldenclaw import pricing
+from max import pricing
 
 
 class LookupTest(unittest.TestCase):
@@ -38,7 +38,7 @@ class EstimateTest(unittest.TestCase):
 
 class ParseTokensTest(unittest.TestCase):
     def test_ritual_budget_shorthand(self):
-        from goldenclaw.ritual import _parse_tokens
+        from max.ritual import _parse_tokens
         self.assertEqual(_parse_tokens("25M"), 25_000_000)
         self.assertEqual(_parse_tokens("500k"), 500_000)
         self.assertEqual(_parse_tokens("1,000,000"), 1_000_000)

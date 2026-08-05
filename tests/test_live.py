@@ -1,6 +1,6 @@
 import unittest
 
-from goldenclaw import live
+from max import live
 
 
 class NormalizeTest(unittest.TestCase):

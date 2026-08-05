@@ -26,7 +26,7 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-STORE = Path.home() / ".config" / "goldenclaw" / "calibration.json"
+STORE = Path.home() / ".config" / "max" / "calibration.json"
 
 # Known providers. `metered` ones have a local-log adapter in core/quota;
 # everything else is manual until someone writes an adapter for it.

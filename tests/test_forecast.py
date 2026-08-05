@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from goldenclaw import forecast
+from max import forecast
 
 
 def _window(percent_used, hours_until_reset, now):

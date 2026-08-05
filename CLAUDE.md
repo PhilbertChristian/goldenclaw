@@ -6,32 +6,32 @@ is the intended customization model — this file orients you.
 
 ## Layout
 
-- `goldenclaw/core.py` — all real logic: log discovery (`find_log_dirs`),
+- `max/core.py` — all real logic: log discovery (`find_log_dirs`),
   event parsing + dedup (`iter_events`), 5h window reconstruction
   (`build_windows`), metric assembly (`assemble`), env check (`doctor`).
-- `goldenclaw/pricing.py` — API-rate table (prefix-matched, first match wins;
+- `max/pricing.py` — API-rate table (prefix-matched, first match wins;
   keep specific prefixes before general ones) + `estimate_cost`. User
-  override: `~/.config/goldenclaw/pricing.json`.
-- `goldenclaw/render.py` — ANSI presentation only, no logic. Respects
+  override: `~/.config/max/pricing.json`.
+- `max/render.py` — ANSI presentation only, no logic. Respects
   `NO_COLOR` and non-TTY. Bare `goldenclaw` shows Max asleep — only the dog; `wakeup` wakes him with the data.
-- `goldenclaw/cli.py` — argparse; subcommands `report` (default), `json`,
+- `max/cli.py` — argparse; subcommands `report` (default), `json`,
   `doctor`, `boot`, `quota`, `calibrate`, `goodnight`, `morning`, `backlog`,
   `ask`, `chat`, `menubar`.
-- `goldenclaw/night.py` — the night shift: backlog parsing, repo allowlist,
+- `max/night.py` — the night shift: backlog parsing, repo allowlist,
   budget-capped headless `claude -p` runs, per-night JSONL journal.
-- `goldenclaw/live.py` — the only networked module: resolves the local OAuth
+- `max/live.py` — the only networked module: resolves the local OAuth
   credential (Keychain first on macOS) and reads Anthropic's usage endpoint.
-- `goldenclaw/quota.py` / `providers.py` — remaining-quota state, offline
+- `max/quota.py` / `providers.py` — remaining-quota state, offline
   calibration fallback, and transcribed non-Claude readings.
-- `goldenclaw/boot.py` — the sleepy-puppy boot sequence. Its status lines are
+- `max/boot.py` — the sleepy-puppy boot sequence. Its status lines are
   real environment checks, not decoration; keep them honest.
-- `goldenclaw/forecast.py` — Max's brain: WASTE/PACE/SHORTFALL verdicts from a
+- `max/forecast.py` — Max's brain: WASTE/PACE/SHORTFALL verdicts from a
   straight-line pace projection (basis always stated), and task-cost estimates
   from real past journals only — no history, no estimate.
-- `goldenclaw/ritual.py` — the 9pm goodnight experience: wake animation, day
+- `max/ritual.py` — the 9pm goodnight experience: wake animation, day
   review, live budget, verdict, task collection, budget ask, then the guarded
   runner. Non-TTY falls back to the plain backlog flow.
-- `goldenclaw/agent.py` — the conversation layer: `ask` (headless, allowed
+- `max/agent.py` — the conversation layer: `ask` (headless, allowed
   tools locked to `Bash(goldenclaw:*)`) and `chat` (interactive) over the
   Claude Code CLI. The agent must never invent numbers — the system prompt
   enforces run-the-sensor-first; keep it that way.

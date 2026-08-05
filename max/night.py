@@ -29,7 +29,7 @@ from pathlib import Path
 
 from . import core
 
-CONFIG_DIR = Path.home() / ".config" / "goldenclaw"
+CONFIG_DIR = Path.home() / ".config" / "max"
 NIGHT_CONFIG = CONFIG_DIR / "night.json"
 BACKLOG = CONFIG_DIR / "backlog.md"
 NIGHTS_DIR = CONFIG_DIR / "nights"

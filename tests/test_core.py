@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from goldenclaw import core
+from max import core
 
 
 def _ev(when, tokens):

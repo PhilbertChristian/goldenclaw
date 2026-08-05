@@ -52,7 +52,9 @@ def main(argv=None):
                        help="percent used, for a transcribed (non-Claude) provider")
     p_cal.add_argument("--plan", default=None, help="plan label, e.g. PRO / MAX")
 
-    sub.add_parser("menubar", help="SwiftBar/xbar plugin output for the menu bar")
+    p_mb = sub.add_parser("menubar", help="Max in the macOS menu bar")
+    p_mb.add_argument("--install", action="store_true",
+                      help="install the SwiftBar/xbar plugin")
 
     p_night = sub.add_parser("goodnight", help="run your backlog overnight, inside guardrails")
     p_night.add_argument("--dry-run", action="store_true", help="show the plan without running")
@@ -102,6 +104,9 @@ def main(argv=None):
         return 0
 
     if args.cmd == "menubar":
+        if args.install:
+            from . import menubar
+            return menubar.install()
         from . import quota
         print(render.render_menubar(quota.state()))
         return 0

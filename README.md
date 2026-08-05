@@ -414,6 +414,19 @@ looks at.
 `pipx uninstall goldenclaw`. It leaves nothing behind except
 `~/.config/goldenclaw/pricing.json` if you created one.
 
+## Max in your menu bar
+
+```bash
+brew install --cask swiftbar   # once
+max menubar --install
+```
+
+`🐕 41%` sits in your menu bar (the tightest window's percent-left),
+refreshing every 5 minutes. The dropdown shows every window with its reset
+clock, plus "Wake Max in Terminal" and "Talk to Max" — the full terminal
+experience one click away. The whole integration is a 4-line SwiftBar
+plugin; delete the file and Max leaves the bar.
+
 ## Art
 
 The dogs are from [Christopher Johnson's ASCII Art Collection](https://asciiart.website):

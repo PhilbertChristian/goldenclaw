@@ -295,54 +295,41 @@ def render_quota(s):
 
 
 def render_menubar(s):
-    """SwiftBar / xbar plugin format: title line, ---, then dropdown rows."""
-    provs = s.get("providers", {})
-    tight = s.get("tightest")
+    """SwiftBar / xbar plugin output: Max in the menu bar.
+
+    Title is the tightest window's percent-left. Dropdown: every window with
+    its reset clock, then actions that open the real terminal experience.
+    """
+    import shutil
+
+    live = s.get("live")
     out = []
-
-    if tight:
-        suffix = "" if tight.get("measured") else "~"
-        out.append("🌙 {:.0f}%{}".format(tight["percent_left"], suffix))
+    if live and live.get("windows"):
+        tight = min(live["windows"], key=lambda w: w["percent_left"])
+        out.append("🐕 {:.0f}%".format(tight["percent_left"]))
     else:
-        out.append("🌙 —")
+        out.append("🐕 zzz")
     out.append("---")
 
-    claude = provs.get("claude", {})
-    sess = claude.get("session")
-    if sess and sess.get("active"):
-        out.append("Session resets in {} | color=#888888".format(
-            _clock(sess["minutes_left"] / 60)))
-
-    if claude.get("calibrated"):
-        out.append("Claude | color=#ffffff")
-        for pool in claude["pools"].values():
-            color = ("#4caf50" if pool["percent_left"] > 50
-                     else "#f5c451" if pool["percent_left"] > 15 else "#e05252")
-            out.append("--{}  {:.0f}% left | color={}".format(
-                pool["label"].replace("Weekly · ", ""), pool["percent_left"], color))
-            out.append("----${:.0f} of ${:.0f} · burn ${:.1f}/h · runway {} | color=#888888".format(
-                pool["used_units"], pool["cap_units"],
-                pool["burn_units_per_hour"], _clock(pool["runway_hours"])))
-        out.append("--resets in {} | color=#888888".format(
-            _clock(claude["hours_until_reset"])))
+    if live and live.get("windows"):
+        plan = (" · " + live["plan"].upper()) if live.get("plan") else ""
+        out.append("Max sniffed for tokens{} | color=#ffffff".format(plan))
+        for w in live["windows"]:
+            left = w["percent_left"]
+            color = ("#4caf50" if left > 50 else "#f5c451" if left > 15 else "#e05252")
+            out.append("{}  {:.0f}% left | color={}".format(w["label"], left, color))
+            reset = _reset_clock(w.get("resets_at"))
+            if reset:
+                out.append("--resets in {} | color=#888888".format(reset))
     else:
-        out.append("Claude — not calibrated | color=#f5c451")
+        err = (s.get("live_error") or {}).get("message", "can't reach your quota")
+        out.append("Max {} | color=#f5c451".format(err if err.startswith("can") else "— " + err))
+        out.append("Sign in with the claude CLI, then refresh | color=#888888")
 
-    for name, p in provs.items():
-        if name == "claude" or p.get("kind") != "manual":
-            continue
-        tag = " [{}]".format(p["plan"]) if p.get("plan") else ""
-        if p["reset_passed"]:
-            out.append("{}{} — reset passed | color=#888888".format(p["label"], tag))
-            continue
-        color = ("#4caf50" if p["percent_left"] > 50
-                 else "#f5c451" if p["percent_left"] > 15 else "#e05252")
-        out.append("{}{}  ~{:.0f}% left | color={}".format(
-            p["label"], tag, p["percent_left"], color))
-        out.append("--read {} ago · resets in {} | color=#888888".format(
-            _clock(p["reading_age_hours"]), _clock(p["hours_until_reset"])))
-
+    exe = shutil.which("goldenclaw") or "goldenclaw"
     out.append("---")
-    out.append("~ = transcribed reading, not measured | color=#888888")
+    out.append("Wake Max in Terminal | bash={} param1=wakeup terminal=true".format(exe))
+    out.append("Talk to Max | bash={} terminal=true".format(
+        shutil.which("max") or exe.replace("goldenclaw", "max")))
     out.append("Refresh | refresh=true")
     return "\n".join(out)

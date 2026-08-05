@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "goldenclaw"
-version = "0.12.0"
+version = "0.13.0"
 description = "Stop paying for tokens you never use — measure and maximize your AI subscription token utilization."
 readme = "README.md"
 license = "MIT"

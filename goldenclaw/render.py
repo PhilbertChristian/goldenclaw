@@ -134,7 +134,7 @@ def render_doctor(d):
         lines.append(f"  {c('✓' if d['events_sampled'] else '✗', GREEN if d['events_sampled'] else YELLOW)} "
                      f"usage events readable: {d['events_sampled']}{'+' if d['events_sampled'] >= 500 else ''}")
     lines.append("")
-    verdict = "ready — run `goldenclaw` for your report" if d["ok"] else "not ready — see above"
+    verdict = "ready — `goldenclaw wakeup` to wake Max" if d["ok"] else "not ready — see above"
     lines.append("  " + (c(verdict, BOLD, GREEN) if d["ok"] else c(verdict, BOLD, YELLOW)))
     lines.append("")
     return "\n".join(lines)

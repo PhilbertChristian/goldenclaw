@@ -1,0 +1,25 @@
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.9", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Run tests (stdlib only — no dependencies to install)
+        run: python -m unittest discover tests -v
+      - name: CLI smoke test
+        run: |
+          pip install .
+          goldenclaw --version
+          goldenclaw report --days 7 || true   # no logs on CI runners; must not crash

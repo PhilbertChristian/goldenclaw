@@ -38,6 +38,7 @@ PROVIDERS = {
     "kimi": {"label": "Kimi", "metered": False},
     "copilot": {"label": "Copilot", "metered": False},
     "gemini": {"label": "Gemini", "metered": False},
+    "deepseek": {"label": "DeepSeek", "metered": False},
 }
 
 STALE_AFTER_HOURS = 24
@@ -131,6 +132,6 @@ def detect_installed():
     import shutil
     binaries = {
         "claude": "claude", "codex": "codex", "cursor": "cursor-agent",
-        "grok": "grok", "kimi": "kimi", "copilot": "copilot", "gemini": "gemini",
+        "grok": "grok", "kimi": "kimi", "copilot": "copilot", "gemini": "gemini", "deepseek": "deepseek",
     }
     return {name: shutil.which(b) is not None for name, b in binaries.items()}

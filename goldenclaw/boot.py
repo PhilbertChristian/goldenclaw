@@ -163,7 +163,7 @@ def wakeup(stream=None, skip_sleep_frame=False):
         _line("", 0, stream)
     else:
         wake_animation(stream)
-    _line("  " + c("Max is up.", BOLD, YELLOW) + c("  🐾  GoldenClaw", DIM), 0.05, stream)
+    _line("  " + c("Max is up.", BOLD, YELLOW) + c("  🐾  Max the Golden Token Retriever", DIM), 0.05, stream)
     _line("", 0, stream)
 
     # What's left — the whole point.
@@ -176,9 +176,12 @@ def wakeup(stream=None, skip_sleep_frame=False):
     except Exception:
         pass
 
+    _line("  " + c("Max checked your providers:", BOLD), 0.04, stream)
+    _line("", 0, stream)
     if snap:
-        plan = ("  ·  " + snap["plan"].upper() + " plan") if snap.get("plan") else ""
-        _line("  " + c("Max checked the tank" + plan + ":", BOLD), 0.04, stream)
+        plan = (" · " + snap["plan"].upper() + " plan") if snap.get("plan") else ""
+        _line("  " + c("CLAUDE", BOLD, GREEN) + c(plan + " · live from your account", DIM),
+              0.04, stream)
         for w in snap["windows"]:
             left = w["percent_left"]
             color = GREEN if left > 50 else (YELLOW if left > 15 else RED)
@@ -212,6 +215,22 @@ def wakeup(stream=None, skip_sleep_frame=False):
             _line(c("      npm install -g @anthropic-ai/claude-code && claude", DIM), 0, stream)
         else:
             _line(c("    Sign in with `claude`, then wake him again.", DIM), 0, stream)
+
+    # The rest of the kennel — Max checks everything, and reports honestly:
+    # a provider he cannot read gets the truth, never an invented bar.
+    from . import providers as _prov
+    installed = _prov.detect_installed()
+    others = {n: v for n, v in installed.items() if n != "claude"}
+    have = sorted(n for n, v in others.items() if v)
+    absent = sorted(n for n, v in others.items() if not v)
+    _line("", 0, stream)
+    for n in have:
+        _line("  " + c(_prov.label(n).upper(), BOLD)
+              + c("  installed — no honest way to read its quota yet (roadmap)", DIM),
+              0.03, stream)
+    if absent:
+        _line(c("  also sniffed for: " + ", ".join(_prov.label(n) for n in absent)
+                + " — not on this machine", DIM), 0.03, stream)
 
     # The week so far, per model — small print under the headline.
     rep = core.assemble(days=7)

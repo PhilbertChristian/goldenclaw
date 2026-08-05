@@ -1,6 +1,11 @@
-# GoldenClaw 🌙
+# Max the Golden Token Retriever 🐕
 
-**Stop paying for tokens you never use.**
+**Wake the dog. He tells you what's left.**
+
+Max is a golden retriever who fetches your AI token quota. Type `goldenclaw`
+and he's asleep in your terminal; type `wakeup` and he checks every provider
+on your machine and reports — live numbers for what he can truly read,
+honest "can't read that yet" for what he can't, and never an invented bar.
 
 ```
   🌙 GoldenClaw — token utilization, last 7 days
@@ -118,9 +123,13 @@ No accounts. No API keys. No config. Your first report renders in seconds.
 | **Overnight share** | Usage between 23:00–07:00 local. For most people: ~0%. That's the recoverable capacity |
 | **Dollar value** | What your consumed tokens would cost at first-party API rates (cache writes 1.25×, reads 0.1× input) |
 
-Currently reads **Claude Code** local session logs (`~/.claude/projects`,
-`~/.config/claude/projects`, or `CLAUDE_CONFIG_DIR`). Multi-provider support
-is on the roadmap.
+**Providers, honestly.** Max sniffs for every agent CLI on your machine —
+Claude, Codex/ChatGPT, Gemini, DeepSeek, Grok, Kimi, Copilot, Cursor. Today
+he can truly *read* one: Claude (local logs + the live usage endpoint via
+your existing CLI credential). Everything else is reported as exactly what
+it is — "installed, but no honest way to read its quota yet" or "not on this
+machine". A provider row never shows a number Max didn't verify; adapters
+for the rest land as each provider proves readable (Codex is closest).
 
 ## What leaves your machine
 
